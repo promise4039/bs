@@ -21,6 +21,8 @@
   --color-accent-hover: #2db84e;
   --color-income: #4ade80;
   --color-expense: #f87171;
+  --color-type-expense: #8b5cf6;
+  --color-type-transfer: #636366;
 
   /* 프로그레스 바 */
   --color-progress-normal: #34C759;

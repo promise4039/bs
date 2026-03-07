@@ -212,26 +212,28 @@ export default function SettingsPage() {
         </Card>
 
         {/* 17개 카테고리 예산 리스트 */}
-        <div className="space-y-2">
-          {EXPENSE_CATEGORY_LIST.map((cat) => {
-            const meta = CATEGORY_META[cat];
-            return (
-              <Card key={cat} className="flex items-center gap-3">
-                <CategoryIcon category={cat} size="sm" />
-                <span className="text-sm font-medium text-text-primary min-w-[72px]">
-                  {meta.name}
-                </span>
-                <div className="flex-1">
-                  <NumberInput
-                    value={budgets[cat]}
-                    onChange={(v) => handleBudgetChange(cat, v)}
-                    suffix="원"
-                  />
+        <Card className="!p-0">
+          <div className="divide-y divide-border-primary/40">
+            {EXPENSE_CATEGORY_LIST.map((cat) => {
+              const meta = CATEGORY_META[cat];
+              return (
+                <div key={cat} className="flex items-center gap-3 px-4 py-3.5 first:rounded-t-[16px] last:rounded-b-[16px]">
+                  <CategoryIcon category={cat} size="sm" />
+                  <span className="text-[14px] font-medium text-text-primary min-w-[72px]">
+                    {meta.name}
+                  </span>
+                  <div className="flex-1">
+                    <NumberInput
+                      value={budgets[cat]}
+                      onChange={(v) => handleBudgetChange(cat, v)}
+                      suffix="원"
+                    />
+                  </div>
                 </div>
-              </Card>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </Card>
       </section>
 
       {/* ========== 카테고리 관리 ========== */}

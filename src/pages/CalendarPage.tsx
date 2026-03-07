@@ -224,29 +224,27 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* ========== 지난달 비교 분석 카드 ========== */}
+      {/* ========== 지난달 비교 배너 ========== */}
       {expenseDiff && expenseDiff.prevTotal > 0 && (
-        <Card className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-base">{expenseDiff.diff > 0 ? '😊' : '😰'}</span>
-              <span className="text-sm text-text-primary">
-                지난달 이때보다{' '}
-                <span className={expenseDiff.diff > 0 ? 'text-income font-semibold' : 'text-expense font-semibold'}>
-                  {formatKRW(Math.abs(expenseDiff.diff))}
-                </span>
-                {expenseDiff.diff > 0 ? ' 덜' : ' 더'} 쓰는 중
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-base">{expenseDiff.diff > 0 ? '😊' : '😰'}</span>
+            <span className="text-[14px] text-text-primary">
+              지난달 이때보다{' '}
+              <span className={expenseDiff.diff > 0 ? 'text-income font-semibold' : 'text-expense font-semibold'}>
+                {formatNumber(Math.abs(expenseDiff.diff))}원
               </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate('/comparison')}
-              className="text-xs text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors"
-            >
-              분석
-            </button>
+              {expenseDiff.diff > 0 ? ' 덜' : ' 더'} 쓰는 중
+            </span>
           </div>
-        </Card>
+          <button
+            type="button"
+            onClick={() => navigate('/comparison')}
+            className="text-[13px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors"
+          >
+            분석
+          </button>
+        </div>
       )}
 
       {/* ========== 툴바: 목록/달력 + 필터 + 검색 + 추가 ========== */}
@@ -338,14 +336,14 @@ export default function CalendarPage() {
 
       {/* 검색 바 (토글) */}
       {showSearch && (
-        <div className="flex items-center gap-2 bg-bg-card rounded-xl px-4 py-3">
+        <div className="flex items-center gap-2 bg-bg-card rounded-[14px] px-4 py-3">
           <span className="text-text-tertiary text-sm flex-shrink-0">🔍</span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="거래처, 메모 검색..."
-            className="flex-1 bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-tertiary"
+            placeholder="거래처 및 메모 내용을 입력하세요"
+            className="flex-1 bg-transparent border-none outline-none text-[14px] text-text-primary placeholder:text-text-tertiary"
             autoFocus
           />
           {searchQuery && (
@@ -362,13 +360,13 @@ export default function CalendarPage() {
 
       {/* ========== 무지출 배너 ========== */}
       {noSpendDayCount > 0 && (
-        <div className="flex items-center justify-between bg-bg-card rounded-xl px-4 py-3">
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#ff6b9d]" />
-            <span className="text-sm text-text-primary">이번 달 무지출</span>
+            <span className="text-[14px] text-text-primary">이번 달 무지출</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-sm font-semibold text-text-primary">총 {noSpendDayCount}일</span>
+            <span className="text-[14px] font-semibold text-text-primary">총 {noSpendDayCount}일</span>
             <span className="text-text-tertiary text-xs">›</span>
           </div>
         </div>

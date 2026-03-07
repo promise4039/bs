@@ -349,7 +349,7 @@ export default function TransactionsPage() {
                   income={summary?.income}
                   expense={summary?.expense}
                 />
-                <div className="bg-bg-card rounded-[14px] px-3 overflow-hidden">
+                <div className="px-1">
                   {txns.map((tx) => (
                     <TransactionListItem
                       key={tx.id}

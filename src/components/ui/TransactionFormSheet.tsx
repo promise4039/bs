@@ -184,13 +184,19 @@ export function TransactionFormSheet({
               )}
             </div>
 
-            {/* 분류 — 테두리 pill 토글 (IMG_1501: 녹색 테두리 선택) */}
+            {/* 분류 — 테두리 pill 토글 (IMG_1501: 수입=녹색, IMG_1502: 지출=보라) */}
             <div className={ROW}>
               <span className="text-[15px] text-text-tertiary w-24 shrink-0">분류</span>
               <div className="flex-1 flex gap-2 justify-end">
                 {typeOptions.map((opt) => {
                   const isSelected = opt.value === type;
                   const isDisabled = opt.value === '이체';
+                  // 타입별 선택 색상 (뱅크샐러드: 수입=녹색, 지출=보라)
+                  const selectedColor = opt.value === '수입'
+                    ? 'border-income text-income'
+                    : opt.value === '지출'
+                      ? 'border-type-expense text-type-expense'
+                      : 'border-type-transfer text-type-transfer';
                   return (
                     <button
                       key={opt.value}
@@ -199,7 +205,7 @@ export function TransactionFormSheet({
                       disabled={isDisabled}
                       className={`rounded-full px-5 py-2 text-[15px] font-medium border-2 transition-all ${
                         isSelected
-                          ? 'border-income text-income bg-transparent'
+                          ? `${selectedColor} bg-transparent`
                           : isDisabled
                             ? 'border-border-primary text-text-tertiary/40 cursor-not-allowed'
                             : 'border-border-primary text-text-tertiary hover:border-text-tertiary'

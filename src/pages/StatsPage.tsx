@@ -7,7 +7,6 @@ import {
   EmptyState,
   SectionHeader,
   ToggleGroup,
-  MonthNavigator,
   DonutChart,
   SpendingLineChart,
 } from '../components/ui';
@@ -15,7 +14,7 @@ import { useMonthNavigation, useMonthlySummary, useFilteredTransactions } from '
 import { CATEGORY_COLORS } from '../constants';
 import type { ExpenseCategory } from '../types';
 import { formatKRW, formatPercent } from '../utils/currency';
-import { shiftMonth, getMonthRange } from '../utils/date';
+import { shiftMonth, getMonthRange, formatMonthLabel } from '../utils/date';
 
 export default function StatsPage() {
   const navigate = useNavigate();
@@ -181,28 +180,55 @@ export default function StatsPage() {
   // 데이터 존재 여부
   const hasData = donutData.length > 0;
 
+  // 월 네비게이션
+  const prevMonthNav = shiftMonth(currentMonth, -1);
+  const nextMonthNav = shiftMonth(currentMonth, 1);
+  const effectiveMax = canGoNext ? undefined : currentMonth;
+  const canGoNextMonth = !effectiveMax || nextMonthNav <= effectiveMax;
+
   return (
-    <div className="pb-28 space-y-6">
-      {/* 헤더 */}
-      <h1 className="text-xl font-bold text-text-primary pt-2">통계</h1>
+    <div className="pb-28 space-y-4">
+      {/* ========== 헤더 ========== */}
+      <div className="flex items-center justify-between pt-1">
+        <h1 className="text-xl font-bold text-text-primary">통계</h1>
+      </div>
 
-      {/* 지출/수입 토글 */}
-      <ToggleGroup
-        options={[
-          { label: '지출', value: 'expense' },
-          { label: '수입', value: 'income' },
-        ]}
-        selected={viewType}
-        onChange={(v) => setViewType(v as 'expense' | 'income')}
-        className="justify-center"
-      />
-
-      {/* 월 네비게이터 */}
-      <MonthNavigator
-        monthKey={currentMonth}
-        onChange={setMonth}
-        maxMonth={canGoNext ? undefined : currentMonth}
-      />
+      {/* ========== 월 네비게이터 + 지출/수입 토글 ========== */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setMonth(prevMonthNav)}
+            className="w-9 h-9 flex items-center justify-center rounded-full text-xl text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+          >
+            ‹
+          </button>
+          <span className="text-lg font-bold text-text-primary min-w-[3rem] text-center">
+            {formatMonthLabel(currentMonth)}
+          </span>
+          <button
+            type="button"
+            disabled={!canGoNextMonth}
+            onClick={() => canGoNextMonth && setMonth(nextMonthNav)}
+            className={`w-9 h-9 flex items-center justify-center rounded-full text-xl transition-colors ${
+              canGoNextMonth
+                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                : 'text-text-tertiary opacity-30 cursor-not-allowed'
+            }`}
+          >
+            ›
+          </button>
+        </div>
+        <ToggleGroup
+          options={[
+            { label: '지출', value: 'expense' },
+            { label: '수입', value: 'income' },
+          ]}
+          selected={viewType}
+          onChange={(v) => setViewType(v as 'expense' | 'income')}
+          compact
+        />
+      </div>
 
       {!hasData ? (
         <EmptyState

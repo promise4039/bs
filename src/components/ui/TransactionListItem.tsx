@@ -78,14 +78,14 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
 
       {/* 메인 콘텐츠 */}
       <div
-        className="relative bg-bg-card transition-transform duration-150 ease-out"
+        className="relative bg-bg-app transition-transform duration-150 ease-out"
         style={{ transform: `translateX(-${offsetX}px)` }}
         onTouchStart={onDelete ? handleTouchStart : undefined}
         onTouchMove={onDelete ? handleTouchMove : undefined}
         onTouchEnd={onDelete ? handleTouchEnd : undefined}
         onClick={handleClick}
       >
-        <div className={`flex items-center gap-3 py-3 px-1 border-b border-border-primary last:border-b-0${
+        <div className={`flex items-center gap-3 py-3.5 px-1 border-b border-border-primary/40 last:border-b-0${
           onClick ? ' cursor-pointer' : ''
         }`}>
           {/* 왼쪽: 카테고리 아이콘 */}
