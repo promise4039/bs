@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* === 뱅크샐러드 스타일 커스텀 테마 === */
+@theme {
+  /* 배경 */
+  --color-bg-app: #0f1117;
+  --color-bg-card: #1c1c1e;
+  --color-bg-card-hover: #2c2c2e;
+  --color-bg-elevated: #2c2c2e;
+  --color-bg-input: #1c1c1e;
+  --color-bg-tabbar: #111113;
+
+  /* 텍스트 */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8e8e93;
+  --color-text-tertiary: #636366;
+  --color-text-placeholder: #48484a;
+
+  /* 액센트 */
+  --color-accent: #34C759;
+  --color-accent-hover: #2db84e;
+  --color-income: #4ade80;
+  --color-expense: #f87171;
+
+  /* 프로그레스 바 */
+  --color-progress-normal: #34C759;
+  --color-progress-warning: #fbbf24;
+  --color-progress-danger: #f87171;
+  --color-progress-bg: #2c2c2e;
+
+  /* 보더 */
+  --color-border-primary: #2c2c2e;
+  --color-border-secondary: #3a3a3c;
+
+  /* 카테고리 차트 색상 (17개) */
+  --color-cat-food: #FF6B6B;
+  --color-cat-car: #4ECDC4;
+  --color-cat-housing: #45B7D1;
+  --color-cat-finance: #96CEB4;
+  --color-cat-medical: #FFEAA7;
+  --color-cat-online: #DDA0DD;
+  --color-cat-beauty: #F8B4D9;
+  --color-cat-living: #87CEEB;
+  --color-cat-fashion: #FFB347;
+  --color-cat-culture: #98D8C8;
+  --color-cat-drink: #F7DC6F;
+  --color-cat-cafe: #D4A574;
+  --color-cat-gift: #BB8FCE;
+  --color-cat-transport: #85C1E9;
+  --color-cat-education: #82E0AA;
+  --color-cat-travel: #F1948A;
+  --color-cat-etc: #AEB6BF;
+
+  /* 폰트 */
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* 반올림 */
+  --radius-card: 16px;
+  --radius-button: 12px;
+  --radius-badge: 8px;
+  --radius-full: 9999px;
+}
+
+/* === 글로벌 스타일 === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--color-bg-app);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+}
+
+/* 스크롤바 숨김 (모바일 느낌) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  scrollbar-width: none;
+}
+
+/* 숫자 입력 스피너 숨김 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* 페이지 전환 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 바텀시트 슬라이드 업 */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* 오버레이 페이드 인 */
+@keyframes fadeOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-overlay {
+  animation: fadeOverlay 0.2s ease-out;
+}
+
+/* PIN 잠금 화면 흔들기 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-out;
+}

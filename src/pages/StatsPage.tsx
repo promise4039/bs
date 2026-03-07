@@ -1,0 +1,429 @@
+// 통계 페이지 — 도넛 차트 + 카테고리 비중 + 지출 속도 라인 차트
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Card,
+  Button,
+  EmptyState,
+  SectionHeader,
+  ToggleGroup,
+  MonthNavigator,
+  DonutChart,
+  SpendingLineChart,
+} from '../components/ui';
+import { useMonthNavigation, useMonthlySummary, useFilteredTransactions } from '../hooks';
+import { CATEGORY_COLORS } from '../constants';
+import type { ExpenseCategory } from '../types';
+import { formatKRW, formatPercent } from '../utils/currency';
+import { shiftMonth, getMonthRange } from '../utils/date';
+
+export default function StatsPage() {
+  const navigate = useNavigate();
+  const { currentMonth, setMonth, canGoNext } = useMonthNavigation();
+  const [viewType, setViewType] = useState<'expense' | 'income'>('expense');
+  const [spendingPeriod, setSpendingPeriod] = useState<'monthly' | 'weekly' | 'daily'>('daily');
+
+  // 월간 요약 데이터
+  const summary = useMonthlySummary(currentMonth);
+
+  // 이번 달, 지난 달 거래 (지출 속도 차트용)
+  const prevMonth = shiftMonth(currentMonth, -1);
+  const currentTxns = useFilteredTransactions({ monthKey: currentMonth, type: '지출' });
+  const prevTxns = useFilteredTransactions({ monthKey: prevMonth, type: '지출' });
+
+  // 도넛 차트 데이터
+  const donutData = useMemo(() => {
+    const categories = viewType === 'expense'
+      ? summary.expenseByCategory
+      : summary.incomeByCategory;
+
+    return categories
+      .filter((c) => c.totalAmount > 0)
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .map((c) => ({
+        label: c.category,
+        value: c.totalAmount,
+        color: CATEGORY_COLORS[c.category as ExpenseCategory] || '#AEB6BF',
+      }));
+  }, [summary, viewType]);
+
+  // 전체 합계
+  const totalAmount = viewType === 'expense' ? summary.totalExpense : summary.totalIncome;
+
+  // 카테고리별 비중 데이터 (범례용)
+  const legendData = useMemo(() => {
+    return donutData.map((d) => ({
+      ...d,
+      percent: totalAmount > 0 ? d.value / totalAmount : 0,
+    }));
+  }, [donutData, totalAmount]);
+
+  // 지출 속도 차트 데이터 계산
+  const { currentCumulative, prevCumulative, xLabels } = useMemo(() => {
+    const { end: currentEnd } = getMonthRange(currentMonth);
+    const daysInMonth = currentEnd.getDate();
+
+    // 날짜별 지출 합산 함수
+    const buildDailyCumulative = (txns: typeof currentTxns, monthKey: string) => {
+      const { end } = getMonthRange(monthKey);
+      const days = end.getDate();
+      const dailyAmounts = new Array(days).fill(0);
+
+      for (const tx of txns) {
+        const day = new Date(tx.date).getDate();
+        if (day >= 1 && day <= days) {
+          dailyAmounts[day - 1] += tx.amount;
+        }
+      }
+
+      // 누적합 계산
+      const cumulative: number[] = [];
+      let runningTotal = 0;
+      for (let i = 0; i < days; i++) {
+        runningTotal += dailyAmounts[i];
+        cumulative.push(runningTotal);
+      }
+      return cumulative;
+    };
+
+    const currentCum = buildDailyCumulative(currentTxns, currentMonth);
+    const prevCum = buildDailyCumulative(prevTxns, prevMonth);
+
+    // xLabels: 5일 간격으로 라벨 표시
+    const labels = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      if (day === 1 || day % 5 === 0 || day === daysInMonth) {
+        return `${day}일`;
+      }
+      return '';
+    });
+
+    return {
+      currentCumulative: currentCum,
+      prevCumulative: prevCum,
+      xLabels: labels,
+    };
+  }, [currentTxns, prevTxns, currentMonth, prevMonth]);
+
+  // 주별 지출 데이터 계산
+  const { weeklyData, weeklyLabels, weeklyAvg } = useMemo(() => {
+    const { end } = getMonthRange(currentMonth);
+    const daysInMonth = end.getDate();
+    const weeks: number[] = [];
+    const labels: string[] = [];
+
+    let weekTotal = 0;
+    let weekNum = 1;
+    const year = parseInt(currentMonth.split('-')[0]);
+    const month = parseInt(currentMonth.split('-')[1]) - 1;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayAmount = currentTxns
+        .filter((tx) => new Date(tx.date).getDate() === d)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+      weekTotal += dayAmount;
+
+      const dayOfWeek = new Date(year, month, d).getDay();
+      if (dayOfWeek === 6 || d === daysInMonth) {
+        weeks.push(weekTotal);
+        labels.push(`${weekNum}주`);
+        weekTotal = 0;
+        weekNum++;
+      }
+    }
+
+    const avg = weeks.length > 0 ? weeks.reduce((a, b) => a + b, 0) / weeks.length : 0;
+    return { weeklyData: weeks, weeklyLabels: labels, weeklyAvg: avg };
+  }, [currentTxns, currentMonth]);
+
+  // 월별 지출 데이터 (최근 6개월)
+  const monthlyBarMonths = useMemo(() => {
+    const months: string[] = [];
+    for (let i = 5; i >= 0; i--) {
+      months.push(shiftMonth(currentMonth, -i));
+    }
+    return months;
+  }, [currentMonth]);
+
+  const prevMonth2 = shiftMonth(currentMonth, -2);
+  const prevMonth3 = shiftMonth(currentMonth, -3);
+  const prevMonth4 = shiftMonth(currentMonth, -4);
+  const prevMonth5 = shiftMonth(currentMonth, -5);
+
+  const txnsM2 = useFilteredTransactions({ monthKey: prevMonth2, type: '지출' });
+  const txnsM3 = useFilteredTransactions({ monthKey: prevMonth3, type: '지출' });
+  const txnsM4 = useFilteredTransactions({ monthKey: prevMonth4, type: '지출' });
+  const txnsM5 = useFilteredTransactions({ monthKey: prevMonth5, type: '지출' });
+
+  const monthlyBarData = useMemo(() => {
+    const txnsByMonth: Record<string, typeof currentTxns> = {
+      [currentMonth]: currentTxns,
+      [prevMonth]: prevTxns,
+      [prevMonth2]: txnsM2,
+      [prevMonth3]: txnsM3,
+      [prevMonth4]: txnsM4,
+      [prevMonth5]: txnsM5,
+    };
+
+    return monthlyBarMonths.map((m) => {
+      const txns = txnsByMonth[m] || [];
+      const total = txns.reduce((sum, tx) => sum + tx.amount, 0);
+      const label = `${parseInt(m.split('-')[1])}월`;
+      return { month: m, label, total };
+    });
+  }, [monthlyBarMonths, currentTxns, prevTxns, txnsM2, txnsM3, txnsM4, txnsM5, currentMonth, prevMonth, prevMonth2, prevMonth3, prevMonth4, prevMonth5]);
+
+  const monthlyAvg = useMemo(() => {
+    const totals = monthlyBarData.map((d) => d.total);
+    return totals.length > 0 ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
+  }, [monthlyBarData]);
+
+  // 데이터 존재 여부
+  const hasData = donutData.length > 0;
+
+  return (
+    <div className="pb-28 space-y-6">
+      {/* 헤더 */}
+      <h1 className="text-xl font-bold text-text-primary pt-2">통계</h1>
+
+      {/* 지출/수입 토글 */}
+      <ToggleGroup
+        options={[
+          { label: '지출', value: 'expense' },
+          { label: '수입', value: 'income' },
+        ]}
+        selected={viewType}
+        onChange={(v) => setViewType(v as 'expense' | 'income')}
+        className="justify-center"
+      />
+
+      {/* 월 네비게이터 */}
+      <MonthNavigator
+        monthKey={currentMonth}
+        onChange={setMonth}
+        maxMonth={canGoNext ? undefined : currentMonth}
+      />
+
+      {!hasData ? (
+        <EmptyState
+          icon={viewType === 'expense' ? '📊' : '💰'}
+          title={`${viewType === 'expense' ? '지출' : '수입'} 데이터가 없습니다`}
+          description="설정에서 뱅크샐러드 엑셀 파일을 import 해주세요."
+        />
+      ) : (
+        <>
+          {/* 도넛 차트 섹션 */}
+          <Card className="flex flex-col items-center">
+            <DonutChart
+              data={donutData}
+              centerLabel={viewType === 'expense' ? '총 지출' : '총 수입'}
+              centerValue={formatKRW(totalAmount)}
+              size={220}
+              onSegmentClick={(label) => navigate(`/category/${encodeURIComponent(label)}`)}
+            />
+          </Card>
+
+          {/* 카테고리 범례 리스트 */}
+          <Card className="space-y-1">
+            {legendData.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => navigate(`/category/${encodeURIComponent(item.label)}`)}
+                className="flex items-center w-full py-2.5 px-1 rounded-xl hover:bg-bg-card-hover transition-colors cursor-pointer bg-transparent border-none text-left"
+              >
+                {/* 컬러 도트 + 카테고리명 + 퍼센트 */}
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm text-text-primary truncate">
+                    {item.label}
+                  </span>
+                  <span className="text-xs text-text-tertiary shrink-0">
+                    {formatPercent(item.percent)}
+                  </span>
+                </div>
+
+                {/* 금액 + 화살표 */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-sm font-medium text-text-primary">
+                    {formatKRW(item.value)}
+                  </span>
+                  <span className="text-text-tertiary text-xs">›</span>
+                </div>
+              </button>
+            ))}
+          </Card>
+
+          {/* 구분선 */}
+          <hr className="border-border-primary" />
+
+          {/* 지출 속도 섹션 (지출 모드일 때만) */}
+          {viewType === 'expense' && (
+            <section>
+              <SectionHeader title="지출 속도" />
+              {/* 기간 토글 */}
+              <div className="flex gap-2 mb-3">
+                {(['monthly', 'weekly', 'daily'] as const).map((period) => (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={() => setSpendingPeriod(period)}
+                    className={`px-4 py-2 text-sm rounded-[10px] border transition-colors ${
+                      spendingPeriod === period
+                        ? 'bg-bg-card border-text-primary text-text-primary font-medium'
+                        : 'bg-transparent border-border-primary text-text-tertiary hover:text-text-secondary'
+                    }`}
+                  >
+                    {period === 'monthly' ? '월별' : period === 'weekly' ? '주별' : '일별'}
+                  </button>
+                ))}
+              </div>
+
+              <Card>
+                {/* 일별: 기존 누적 라인 차트 */}
+                {spendingPeriod === 'daily' && (
+                  <SpendingLineChart
+                    datasets={[
+                      {
+                        label: '이번 달',
+                        data: currentCumulative,
+                        color: '#6c9fff',
+                      },
+                      {
+                        label: '지난 달',
+                        data: prevCumulative,
+                        color: '#636366',
+                        dashed: true,
+                      },
+                    ]}
+                    xLabels={xLabels}
+                    height={200}
+                  />
+                )}
+
+                {/* 주별: 바 차트 */}
+                {spendingPeriod === 'weekly' && (
+                  <div>
+                    <div className="flex items-end gap-3 h-[180px] px-2 relative">
+                      {/* 평균선 */}
+                      {weeklyData.length > 0 && Math.max(...weeklyData) > 0 && (
+                        <div
+                          className="absolute left-0 right-0 border-t border-dashed border-text-tertiary/50 pointer-events-none"
+                          style={{
+                            bottom: `${(weeklyAvg / Math.max(...weeklyData)) * 160 + 20}px`,
+                          }}
+                        >
+                          <span className="absolute right-0 -top-4 text-[10px] text-text-tertiary">
+                            평균
+                          </span>
+                        </div>
+                      )}
+                      {weeklyData.map((amount, i) => {
+                        const maxVal = Math.max(...weeklyData, 1);
+                        const height = (amount / maxVal) * 160;
+                        return (
+                          <div
+                            key={weeklyLabels[i]}
+                            className="flex-1 flex flex-col items-center gap-1"
+                          >
+                            <span className="text-[10px] text-text-secondary font-medium">
+                              {Math.round(amount / 10000)}만
+                            </span>
+                            <div
+                              className="w-full rounded-t-md"
+                              style={{
+                                height: `${Math.max(height, 4)}px`,
+                                backgroundColor: '#6c9fff',
+                                opacity: 0.85,
+                              }}
+                            />
+                            <span className="text-[10px] text-text-tertiary">
+                              {weeklyLabels[i]}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-primary">
+                      <span className="text-sm text-text-secondary">주별 평균지출</span>
+                      <span className="text-sm font-semibold text-accent">
+                        {Math.round(weeklyAvg).toLocaleString('ko-KR')}원
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 월별: 최근 6개월 바 차트 */}
+                {spendingPeriod === 'monthly' && (
+                  <div>
+                    <div className="flex items-end gap-3 h-[180px] px-2 relative">
+                      {/* 평균선 */}
+                      {monthlyBarData.length > 0 && Math.max(...monthlyBarData.map((d) => d.total)) > 0 && (
+                        <div
+                          className="absolute left-0 right-0 border-t border-dashed border-text-tertiary/50 pointer-events-none"
+                          style={{
+                            bottom: `${(monthlyAvg / Math.max(...monthlyBarData.map((d) => d.total))) * 160 + 20}px`,
+                          }}
+                        >
+                          <span className="absolute right-0 -top-4 text-[10px] text-text-tertiary">
+                            평균
+                          </span>
+                        </div>
+                      )}
+                      {monthlyBarData.map((item) => {
+                        const maxVal = Math.max(...monthlyBarData.map((d) => d.total), 1);
+                        const height = (item.total / maxVal) * 160;
+                        const isCurrent = item.month === currentMonth;
+                        return (
+                          <div
+                            key={item.month}
+                            className="flex-1 flex flex-col items-center gap-1"
+                          >
+                            <span className="text-[10px] text-text-secondary font-medium">
+                              {item.total >= 10000
+                                ? `${Math.round(item.total / 10000)}만`
+                                : item.total > 0
+                                  ? `${Math.round(item.total / 1000)}천`
+                                  : '0'}
+                            </span>
+                            <div
+                              className="w-full rounded-t-md"
+                              style={{
+                                height: `${Math.max(height, 4)}px`,
+                                backgroundColor: isCurrent ? '#6c9fff' : '#636366',
+                                opacity: isCurrent ? 0.9 : 0.5,
+                              }}
+                            />
+                            <span
+                              className={`text-[10px] ${isCurrent ? 'text-accent font-medium' : 'text-text-tertiary'}`}
+                            >
+                              {item.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-primary">
+                      <span className="text-sm text-text-secondary">월별 평균지출</span>
+                      <span className="text-sm font-semibold text-accent">
+                        {Math.round(monthlyAvg).toLocaleString('ko-KR')}원
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </section>
+          )}
+
+          {/* 월별 비교 분석 버튼 */}
+          <Button variant="secondary" fullWidth onClick={() => navigate('/comparison')}>
+            월별 비교 분석
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}

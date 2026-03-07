@@ -1,0 +1,13 @@
+node_modules
+dist
+.vite
+*.local
+
+# 스크린샷 (개인 금융 데이터 포함)
+IMG_*.PNG
+IMG_*.png
+
+# 뱅크샐러드 엑셀 데이터 (개인 금융 데이터)
+*.xlsx
+*.xls
+data/
