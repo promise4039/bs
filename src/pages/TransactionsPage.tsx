@@ -1,9 +1,7 @@
-// 가계부 내역 페이지 — 날짜별 그룹 거래 리스트
+// 가계부 내역 페이지 — 뱅크샐러드 스타일 (IMG_1500 레이아웃)
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  MonthNavigator,
-  ToggleGroup,
   DateDivider,
   TransactionListItem,
   EmptyState,
@@ -13,54 +11,55 @@ import { useMonthNavigation, useMonthlySummary, useFilteredTransactions } from '
 import { useTransactionStore } from '../store';
 import type { Transaction, TransactionType } from '../types';
 import { formatNumber } from '../utils/currency';
+import { formatMonthLabel, shiftMonth, getCurrentMonthKey } from '../utils/date';
 
 type TypeFilter = 'all' | '수입' | '지출';
 
-const TOGGLE_OPTIONS = [
-  { label: '전체', value: 'all' },
-  { label: '수입', value: '수입' },
-  { label: '지출', value: '지출' },
-];
-
 export default function TransactionsPage() {
   const navigate = useNavigate();
-  const { currentMonth, setMonth } = useMonthNavigation();
+  const { currentMonth, setMonth, canGoNext } = useMonthNavigation();
   const { totalIncome, totalExpense } = useMonthlySummary(currentMonth);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
-  // 검색/필터 상태
+  // 검색 상태
+  const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchMode, setSearchMode] = useState<'content' | 'tag'>('content');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  // 결제수단 필터 상태
+  // 결제수단 필터
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
   const [showPaymentFilter, setShowPaymentFilter] = useState(false);
 
-  // 거래 CRUD 상태
+  // 거래 CRUD
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const addTransaction = useTransactionStore((s) => s.addTransaction);
   const updateTransaction = useTransactionStore((s) => s.updateTransaction);
   const deleteTransaction = useTransactionStore((s) => s.deleteTransaction);
 
-  // 태그 추출용: 검색 필터 없이 월/타입만 적용한 거래 목록
+  // 월 네비게이션
+  const effectiveMax = canGoNext ? undefined : currentMonth;
+  const prevMonth = shiftMonth(currentMonth, -1);
+  const nextMonth = shiftMonth(currentMonth, 1);
+  const canGoNextMonth = !effectiveMax || nextMonth <= effectiveMax;
+
+  // 이전 달 비교
+  const prevMonthKey = shiftMonth(currentMonth, -1);
+  const { totalExpense: prevTotalExpense } = useMonthlySummary(prevMonthKey);
+  const isCurrentMonth = currentMonth === getCurrentMonthKey();
+
   const allMonthTransactions = useFilteredTransactions({
     monthKey: currentMonth,
     type: typeFilter !== 'all' ? (typeFilter as TransactionType) : undefined,
   });
 
-  // 필터링된 거래 목록 (검색 쿼리 + 결제수단 필터 적용)
   const filteredTransactions = useFilteredTransactions({
     monthKey: currentMonth,
     type: typeFilter !== 'all' ? (typeFilter as TransactionType) : undefined,
-    searchQuery: searchMode === 'content'
-      ? searchQuery || undefined
-      : selectedTag ? `#${selectedTag}` : undefined,
+    searchQuery: searchQuery || undefined,
     paymentMethod: selectedPaymentMethod || undefined,
   });
 
-  // 결제수단 목록 추출
+  // 결제수단 목록
   const paymentMethods = useMemo(() => {
     const methods = new Set<string>();
     for (const tx of allMonthTransactions) {
@@ -69,282 +68,276 @@ export default function TransactionsPage() {
     return Array.from(methods).sort();
   }, [allMonthTransactions]);
 
-  // 메모에서 해시태그 추출
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    for (const tx of allMonthTransactions) {
-      if (tx.memo) {
-        const matches = tx.memo.match(/#[\w가-힣]+/g);
-        if (matches) matches.forEach((t) => tags.add(t.slice(1)));
-      }
-    }
-    return Array.from(tags).sort();
-  }, [allMonthTransactions]);
-
-  // 검색 활성 여부
-  const isSearchActive = searchMode === 'content' ? searchQuery.length > 0 : selectedTag !== null;
   const isFilterActive = selectedPaymentMethod !== null;
 
-  // 날짜별 그룹핑 (날짜 내림차순)
+  // 날짜별 그룹핑
   const groupedByDate = useMemo(() => {
     const map = new Map<string, Transaction[]>();
     for (const tx of filteredTransactions) {
       const existing = map.get(tx.date);
-      if (existing) {
-        existing.push(tx);
-      } else {
-        map.set(tx.date, [tx]);
-      }
+      if (existing) existing.push(tx);
+      else map.set(tx.date, [tx]);
     }
-    // Map은 삽입 순서를 유지하고, filteredTransactions가 이미 날짜 내림차순이므로
-    // 그대로 사용하면 된다
     return map;
   }, [filteredTransactions]);
 
-  // 각 날짜별 수입/지출 합계 계산
+  // 날짜별 합계
   const dateSummaries = useMemo(() => {
     const summaries = new Map<string, { income: number; expense: number }>();
     for (const [date, txns] of groupedByDate) {
-      let income = 0;
-      let expense = 0;
+      let income = 0, expense = 0;
       for (const tx of txns) {
-        if (tx.type === '수입') {
-          income += tx.amount;
-        } else {
-          expense += tx.amount;
-        }
+        if (tx.type === '수입') income += tx.amount;
+        else expense += tx.amount;
       }
       summaries.set(date, { income, expense });
     }
     return summaries;
   }, [groupedByDate]);
 
+  // 지난달 비교
+  const expenseDiff = useMemo(() => {
+    if (!isCurrentMonth || prevTotalExpense === 0) return null;
+    const diff = prevTotalExpense - totalExpense;
+    return diff;
+  }, [isCurrentMonth, prevTotalExpense, totalExpense]);
+
   const hasTransactions = filteredTransactions.length > 0;
 
   return (
-    <div className="flex flex-col gap-4 pb-24 animate-fade-in">
-      {/* 헤더: 가계부 + 카테고리 관리 + 총 지출 */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-3 pb-24 animate-fade-in">
+      {/* ========== 헤더: 가계부 + 아이콘 ========== */}
+      <div className="flex items-center justify-between pt-1">
         <h1 className="text-xl font-bold text-text-primary">가계부</h1>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/categories')}
-            className="text-text-tertiary hover:text-accent text-sm bg-transparent border-none cursor-pointer transition-colors"
-            title="카테고리 관리"
-          >
-            ⚙️
-          </button>
-          <span className="text-lg font-bold text-text-primary">
-            {formatNumber(totalExpense)}원
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/categories')}
+          className="text-text-tertiary hover:text-accent text-lg bg-transparent border-none cursor-pointer transition-colors"
+          title="카테고리 관리"
+        >
+          ⚙️
+        </button>
       </div>
 
-      {/* 월 네비게이터 */}
-      <MonthNavigator monthKey={currentMonth} onChange={setMonth} />
-
-      {/* 월 요약 바 */}
-      <div className="flex items-center justify-center gap-4 py-2.5 px-4 bg-bg-card rounded-[12px]">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-text-secondary">수입</span>
-          <span className="text-sm font-semibold text-income">
-            +{formatNumber(totalIncome)}원
-          </span>
-        </div>
-        <div className="w-px h-4 bg-border-primary" />
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-text-secondary">지출</span>
-          <span className="text-sm font-semibold text-text-primary">
-            -{formatNumber(totalExpense)}원
-          </span>
-        </div>
-      </div>
-
-      {/* 목록 | 달력 + 타입 필터 토글 */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 bg-bg-elevated rounded-full p-1">
+      {/* ========== 월 네비게이터 + 지출/수입 총계 (같은 줄) ========== */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
           <button
             type="button"
-            className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm"
+            onClick={() => setMonth(prevMonth)}
+            className="w-9 h-9 flex items-center justify-center rounded-full text-xl text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
           >
-            <span className="text-[14px]">☰</span>
-            <span>목록</span>
+            ‹
           </button>
+          <span className="text-lg font-bold text-text-primary min-w-[3rem] text-center">
+            {formatMonthLabel(currentMonth)}
+          </span>
           <button
             type="button"
-            onClick={() => navigate('/calendar')}
-            className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors"
-          >
-            <span className="text-[14px]">📅</span>
-            <span>달력</span>
-          </button>
-        </div>
-        <ToggleGroup
-          options={TOGGLE_OPTIONS}
-          selected={typeFilter}
-          onChange={(val) => setTypeFilter(val as TypeFilter)}
-        />
-      </div>
-
-      {/* 검색/필터 바 */}
-      <div className="flex flex-col gap-2.5">
-        {/* 검색 입력 + 모드 토글 */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-2.5 bg-bg-card rounded-[12px] px-4 py-3">
-            <span className="text-text-tertiary text-base flex-shrink-0">🔍</span>
-            {searchMode === 'content' ? (
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="거래처 및 메모 내용을 입력하세요"
-                className="flex-1 bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-tertiary"
-              />
-            ) : (
-              <span className="flex-1 text-sm text-text-tertiary">
-                {selectedTag ? `#${selectedTag}` : '태그를 선택하세요'}
-              </span>
-            )}
-            {/* 검색 초기화 버튼 */}
-            {isSearchActive && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedTag(null);
-                }}
-                className="bg-transparent border-none cursor-pointer text-text-tertiary hover:text-text-primary text-sm transition-colors"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-          {/* 모드 토글: 내역·메모 | 태그 */}
-          <div className="flex items-center bg-bg-card rounded-[10px] overflow-hidden flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                setSearchMode('content');
-                setSelectedTag(null);
-              }}
-              className={`px-3 py-2 text-xs font-medium border-none cursor-pointer transition-colors ${
-                searchMode === 'content'
-                  ? 'bg-accent/15 text-accent'
-                  : 'bg-transparent text-text-tertiary hover:text-text-secondary'
-              }`}
-            >
-              내역·메모
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchMode('tag');
-                setSearchQuery('');
-              }}
-              className={`px-3 py-2 text-xs font-medium border-none cursor-pointer transition-colors ${
-                searchMode === 'tag'
-                  ? 'bg-accent/15 text-accent'
-                  : 'bg-transparent text-text-tertiary hover:text-text-secondary'
-              }`}
-            >
-              태그
-            </button>
-          </div>
-        </div>
-
-        {/* 태그 모드: 태그 칩 목록 */}
-        {searchMode === 'tag' && allTags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium border cursor-pointer transition-colors ${
-                  selectedTag === tag
-                    ? 'bg-accent/15 text-accent border-accent'
-                    : 'bg-bg-elevated text-text-secondary border-transparent hover:border-border-primary'
-                }`}
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
-        )}
-        {searchMode === 'tag' && allTags.length === 0 && (
-          <p className="text-xs text-text-tertiary text-center py-2">
-            이 달의 메모에 해시태그가 없습니다
-          </p>
-        )}
-
-        {/* 결제수단 필터 */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowPaymentFilter(!showPaymentFilter)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium border cursor-pointer transition-colors flex items-center gap-1.5 ${
-              isFilterActive
-                ? 'bg-accent/15 text-accent border-accent'
-                : 'bg-bg-card text-text-secondary border-transparent hover:border-border-primary'
+            disabled={!canGoNextMonth}
+            onClick={() => canGoNextMonth && setMonth(nextMonth)}
+            className={`w-9 h-9 flex items-center justify-center rounded-full text-xl transition-colors ${
+              canGoNextMonth
+                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                : 'text-text-tertiary opacity-30 cursor-not-allowed'
             }`}
           >
-            <span>💳</span>
-            <span>{selectedPaymentMethod ?? '결제수단'}</span>
-            {isFilterActive && (
-              <span
-                role="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedPaymentMethod(null);
-                }}
-                className="ml-0.5 hover:text-text-primary"
-              >
-                ✕
-              </span>
-            )}
+            ›
           </button>
         </div>
-
-        {/* 결제수단 칩 목록 */}
-        {showPaymentFilter && paymentMethods.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {paymentMethods.map((method) => (
-              <button
-                key={method}
-                type="button"
-                onClick={() => {
-                  setSelectedPaymentMethod(
-                    selectedPaymentMethod === method ? null : method
-                  );
-                  setShowPaymentFilter(false);
-                }}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium border cursor-pointer transition-colors ${
-                  selectedPaymentMethod === method
-                    ? 'bg-accent/15 text-accent border-accent'
-                    : 'bg-bg-elevated text-text-secondary border-transparent hover:border-border-primary'
-                }`}
-              >
-                {method}
-              </button>
-            ))}
+        <div className="text-right">
+          <div className="flex items-baseline gap-1">
+            <span className="text-xs text-text-secondary">지출</span>
+            <span className="text-lg font-bold text-text-primary">
+              {formatNumber(totalExpense)}원
+            </span>
           </div>
-        )}
-        {showPaymentFilter && paymentMethods.length === 0 && (
-          <p className="text-xs text-text-tertiary text-center py-2">
-            이 달의 결제수단 정보가 없습니다
-          </p>
-        )}
-
-        {/* 검색/필터 결과 건수 */}
-        {(isSearchActive || isFilterActive) && (
-          <p className="text-xs text-text-secondary">
-            검색결과 <span className="font-semibold text-accent">{filteredTransactions.length}</span>건
-          </p>
-        )}
+          <div className="flex items-baseline gap-1 justify-end">
+            <span className="text-xs text-text-secondary">수입</span>
+            <span className="text-sm font-semibold text-income">
+              {formatNumber(totalIncome)}원
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* 날짜별 거래 리스트 */}
+      {/* ========== 지난달 비교 카드 ========== */}
+      {expenseDiff !== null && (
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-base">{expenseDiff > 0 ? '😊' : '😰'}</span>
+            <span className="text-[14px] text-text-primary">
+              지난달 이때보다{' '}
+              <span className={expenseDiff > 0 ? 'text-income font-semibold' : 'text-expense font-semibold'}>
+                {formatNumber(Math.abs(expenseDiff))}원
+              </span>
+              {expenseDiff > 0 ? ' 덜' : ' 더'} 쓰는 중
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/stats')}
+            className="text-[13px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors"
+          >
+            분석
+          </button>
+        </div>
+      )}
+
+      {/* ========== 툴바: 목록/달력/필터 + 검색/추가 아이콘 ========== */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {/* 목록/달력 토글 */}
+          <div className="flex items-center bg-bg-elevated rounded-full p-1">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm"
+            >
+              <span className="text-[14px]">☰</span>
+              <span>목록</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/calendar')}
+              className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors"
+            >
+              <span className="text-[14px]">📅</span>
+              <span>달력</span>
+            </button>
+          </div>
+
+          {/* 필터 드롭다운 */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowPaymentFilter(!showPaymentFilter)}
+              className={`flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full transition-colors ${
+                typeFilter !== 'all' || isFilterActive
+                  ? 'bg-accent/15 text-accent'
+                  : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <span>필터</span>
+              <span className="text-[11px]">▾</span>
+            </button>
+            {showPaymentFilter && (
+              <div className="absolute top-full left-0 mt-1 z-30 bg-bg-elevated border border-border-primary rounded-xl shadow-lg overflow-hidden min-w-[140px]">
+                {/* 타입 필터 */}
+                <div className="px-3 py-2 text-[11px] text-text-tertiary font-medium border-b border-border-primary">분류</div>
+                {(['all', '수입', '지출'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTypeFilter(t)}
+                    className={`w-full px-4 py-3 text-sm text-left transition-colors ${
+                      typeFilter === t ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover'
+                    }`}
+                  >
+                    {t === 'all' ? '전체' : t}
+                  </button>
+                ))}
+                {/* 결제수단 필터 */}
+                {paymentMethods.length > 0 && (
+                  <>
+                    <div className="px-3 py-2 text-[11px] text-text-tertiary font-medium border-t border-border-primary">결제수단</div>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedPaymentMethod(null); setShowPaymentFilter(false); }}
+                      className={`w-full px-4 py-3 text-sm text-left transition-colors ${
+                        !selectedPaymentMethod ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover'
+                      }`}
+                    >
+                      전체
+                    </button>
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => { setSelectedPaymentMethod(method); setShowPaymentFilter(false); }}
+                        className={`w-full px-4 py-3 text-sm text-left transition-colors truncate ${
+                          selectedPaymentMethod === method ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover'
+                        }`}
+                      >
+                        {method}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {/* 검색 아이콘 */}
+          <button
+            type="button"
+            onClick={() => setShowSearch(!showSearch)}
+            className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+              showSearch ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+            }`}
+          >
+            <span className="text-lg">🔍</span>
+          </button>
+          {/* 추가 아이콘 */}
+          <button
+            type="button"
+            onClick={() => setShowAddForm(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+          >
+            <span className="text-2xl font-light">+</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ========== 검색바 (토글) ========== */}
+      {showSearch && (
+        <div className="flex items-center gap-2 bg-bg-card rounded-[14px] px-4 py-3">
+          <span className="text-text-tertiary text-sm flex-shrink-0">🔍</span>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="거래처 및 메모 내용을 입력하세요"
+            className="flex-1 bg-transparent border-none outline-none text-[14px] text-text-primary placeholder:text-text-tertiary"
+            autoFocus
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="bg-transparent border-none cursor-pointer text-text-tertiary hover:text-text-primary text-sm transition-colors"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 활성 필터 뱃지 */}
+      {(searchQuery || isFilterActive || typeFilter !== 'all') && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {typeFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-accent/10 text-accent">
+              {typeFilter}
+              <button type="button" onClick={() => setTypeFilter('all')} className="hover:text-text-primary">✕</button>
+            </span>
+          )}
+          {isFilterActive && (
+            <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-accent/10 text-accent">
+              💳 {selectedPaymentMethod}
+              <button type="button" onClick={() => setSelectedPaymentMethod(null)} className="hover:text-text-primary">✕</button>
+            </span>
+          )}
+          {searchQuery && (
+            <span className="text-xs text-text-secondary">
+              검색결과 <span className="font-semibold text-accent">{filteredTransactions.length}</span>건
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ========== 날짜별 거래 리스트 ========== */}
       {hasTransactions ? (
         <div className="flex flex-col">
           {Array.from(groupedByDate.entries()).map(([date, txns]) => {
@@ -378,11 +371,11 @@ export default function TransactionsPage() {
         />
       )}
 
-      {/* 거래 추가 FAB 버튼 */}
+      {/* FAB — 뱅크샐러드 스타일 원형 + 버튼 */}
       <button
         type="button"
         onClick={() => setShowAddForm(true)}
-        className="fixed bottom-20 right-4 z-20 w-14 h-14 rounded-full bg-accent text-white text-2xl font-bold shadow-lg hover:bg-accent-hover transition-colors flex items-center justify-center"
+        className="fixed bottom-24 right-5 z-20 w-14 h-14 rounded-full bg-accent text-white text-2xl shadow-lg hover:bg-accent-hover transition-colors flex items-center justify-center"
         aria-label="거래 추가"
       >
         +
@@ -407,11 +400,15 @@ export default function TransactionsPage() {
           updateTransaction(tx.id, tx);
           setEditingTx(null);
         }}
-        onDelete={(id) => {
-          deleteTransaction(id);
-          setEditingTx(null);
-        }}
       />
+
+      {/* 필터 오버레이 */}
+      {showPaymentFilter && (
+        <div
+          className="fixed inset-0 z-20"
+          onClick={() => setShowPaymentFilter(false)}
+        />
+      )}
     </div>
   );
 }
