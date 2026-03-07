@@ -21,6 +21,70 @@ import { EXPENSE_CATEGORY_LIST } from '../types';
 import type { ExpenseCategory } from '../types';
 import { formatKRW } from '../utils/currency';
 
+// localStorage에서 앱 데이터를 모두 내보내기
+const ALL_STORAGE_KEYS = [
+  'bs_transactions',
+  'bs_budget_config',
+  'bs_sinking_fund',
+  'bs_last_import',
+  'bs_ui_state',
+  'bs_assets',
+  'bs_auth',
+  'bs_categories',
+];
+
+function exportAllData() {
+  const data: Record<string, unknown> = {};
+  for (const key of ALL_STORAGE_KEYS) {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        data[key] = JSON.parse(raw);
+      } catch {
+        data[key] = raw;
+      }
+    }
+  }
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gagebu_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importAllData(file: File): Promise<{ keys: number }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if (typeof data !== 'object' || data === null) {
+          reject(new Error('올바른 백업 파일이 아닙니다'));
+          return;
+        }
+        let count = 0;
+        for (const key of ALL_STORAGE_KEYS) {
+          if (key in data) {
+            localStorage.setItem(
+              key,
+              typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]),
+            );
+            count++;
+          }
+        }
+        resolve({ keys: count });
+      } catch {
+        reject(new Error('JSON 파싱에 실패했습니다'));
+      }
+    };
+    reader.onerror = () => reject(new Error('파일 읽기에 실패했습니다'));
+    reader.readAsText(file);
+  });
+}
+
 export default function SettingsPage() {
   const navigate = useNavigate();
 
@@ -102,6 +166,24 @@ export default function SettingsPage() {
     setImportDone(false);
     setShowClearDataDialog(false);
   }, [clearTransactions, reset]);
+
+  // --- JSON 내보내기/가져오기 ---
+  const jsonInputRef = useRef<HTMLInputElement>(null);
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleJsonImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const { keys } = await importAllData(file);
+      setSyncMessage({ type: 'success', text: `${keys}개 항목 복원 완료. 페이지를 새로고침합니다...` });
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+      setSyncMessage({ type: 'error', text: (err as Error).message });
+    }
+    // input 초기화
+    if (jsonInputRef.current) jsonInputRef.current.value = '';
+  }, []);
 
   // --- 예산 합계 계산 ---
   const totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
@@ -237,6 +319,44 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
+          )}
+        </Card>
+      </section>
+
+      {/* 구분선 */}
+      <hr className="border-border-primary" />
+
+      {/* ========== 기기 간 동기화 ========== */}
+      <section className="space-y-3">
+        <SectionHeader title="기기 간 동기화" />
+
+        <Card className="space-y-3">
+          <p className="text-xs text-text-secondary">
+            PC에서 데이터를 내보내고, 스마트폰에서 가져오면 동일한 데이터를 사용할 수 있습니다.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" fullWidth onClick={exportAllData}>
+              데이터 내보내기 (JSON)
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => jsonInputRef.current?.click()}
+            >
+              데이터 가져오기
+            </Button>
+            <input
+              ref={jsonInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={handleJsonImport}
+            />
+          </div>
+          {syncMessage && (
+            <p className={`text-xs ${syncMessage.type === 'success' ? 'text-income' : 'text-expense'}`}>
+              {syncMessage.text}
+            </p>
           )}
         </Card>
       </section>
