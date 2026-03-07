@@ -85,22 +85,22 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
         onTouchEnd={onDelete ? handleTouchEnd : undefined}
         onClick={handleClick}
       >
-        <div className={`flex items-center gap-3.5 py-4 px-1 border-b border-border-primary last:border-b-0${
+        <div className={`flex items-center gap-4 py-5 px-1 border-b border-border-primary last:border-b-0${
           onClick ? ' cursor-pointer' : ''
         }`}>
           {/* 왼쪽: 카테고리 아이콘 */}
           <CategoryIcon category={category} size="md" />
 
           {/* 중앙: 내용 + 서브정보 */}
-          <div className="flex flex-col flex-1 min-w-0 gap-0.5">
-            <span className="text-text-primary text-[15px] font-medium truncate">
+          <div className="flex flex-col flex-1 min-w-0 gap-1">
+            <span className="text-text-primary text-[16px] font-medium truncate">
               {content}
             </span>
             <span className="text-[13px] text-text-tertiary truncate">
               {subcategory} | {paymentMethod}
             </span>
             {memo && (
-              <span className="text-[12px] text-text-tertiary truncate mt-0.5">
+              <span className="text-[12px] text-text-tertiary truncate">
                 {memo}
               </span>
             )}
@@ -108,7 +108,7 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
 
           {/* 오른쪽: 금액 */}
           <span
-            className={`font-semibold text-[15px] whitespace-nowrap ${
+            className={`font-semibold text-[16px] whitespace-nowrap ${
               type === '수입' ? 'text-income' : 'text-text-primary'
             }`}
           >
