@@ -10,7 +10,7 @@ export interface CategoryIconProps {
 
 const SIZE_CLASSES = {
   sm: 'w-8 h-8 text-sm',
-  md: 'w-11 h-11 text-xl',
+  md: 'w-9 h-9 text-lg',
   lg: 'w-14 h-14 text-2xl',
 } as const;
 
