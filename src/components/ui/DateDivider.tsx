@@ -8,7 +8,6 @@ export interface DateDividerProps {
   expense?: number;
 }
 
-/** 오늘 날짜인지 확인 */
 function isToday(dateStr: string): boolean {
   const today = new Date();
   const d = new Date(dateStr);
@@ -19,7 +18,6 @@ function isToday(dateStr: string): boolean {
   );
 }
 
-/** 어제 날짜인지 확인 */
 function isYesterday(dateStr: string): boolean {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -31,7 +29,6 @@ function isYesterday(dateStr: string): boolean {
   );
 }
 
-/** "7일 오늘" / "6일 어제" / "5일 수요일" 형태 */
 function formatDateWithRelative(dateStr: string): string {
   const d = new Date(dateStr);
   const day = d.getDate();
@@ -45,14 +42,14 @@ export function DateDivider({ date, income = 0, expense = 0 }: DateDividerProps)
   const label = formatDateWithRelative(date);
 
   return (
-    <div className="flex justify-between items-center py-2.5 px-1 sticky top-0 z-10 bg-bg-app/90 backdrop-blur-sm">
+    <div className="flex justify-between items-center py-3 px-1 mt-2 sticky top-0 z-10 bg-bg-app/90 backdrop-blur-sm">
       {/* 왼쪽: 날짜 라벨 */}
-      <span className="text-sm text-text-primary font-semibold">
+      <span className="text-[15px] text-text-primary font-semibold">
         {label}
       </span>
 
       {/* 오른쪽: 수입/지출 합계 */}
-      <div className="flex gap-3 text-xs">
+      <div className="flex gap-3 text-[13px]">
         {income > 0 && (
           <span className="text-income font-medium">+{formatNumber(income)}원</span>
         )}

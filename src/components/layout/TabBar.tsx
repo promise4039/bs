@@ -30,14 +30,14 @@ export function TabBar() {
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors ${
+              className={`flex flex-col items-center justify-center gap-1 flex-1 py-1.5 transition-colors ${
                 isActive ? 'text-accent' : 'text-text-tertiary'
               }`}
             >
-              <span className="text-xl leading-none">
+              <span className="text-[22px] leading-none">
                 {isActive ? tab.iconActive : tab.icon}
               </span>
-              <span className={`text-[10px] font-medium ${
+              <span className={`text-[11px] font-medium ${
                 isActive ? 'text-accent' : 'text-text-tertiary'
               }`}>
                 {tab.label}
@@ -46,8 +46,8 @@ export function TabBar() {
           );
         })}
       </div>
-      {/* iOS safe area */}
-      <div className="h-[env(safe-area-inset-bottom)]" />
+      {/* iOS safe area — 홈바 영역 */}
+      <div className="pb-[env(safe-area-inset-bottom,8px)]" />
     </nav>
   );
 }

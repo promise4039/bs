@@ -447,6 +447,7 @@ export default function SettingsPage() {
               ]}
               selected={importMode}
               onChange={(v) => setImportMode(v as 'merge' | 'replace')}
+              compact
             />
 
             {/* Import 확인 버튼 */}

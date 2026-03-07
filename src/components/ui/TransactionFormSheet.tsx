@@ -1,7 +1,6 @@
-// 거래 추가/수정 바텀시트 폼 — 뱅크샐러드 스타일 (행 기반 레이아웃)
+// 거래 추가/수정 바텀시트 폼 — 뱅크샐러드 스타일 (하단 저장 버튼 고정)
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { BottomSheet } from './BottomSheet';
-import { Button } from './Button';
 import { CategoryPickerSheet } from './CategoryPickerSheet';
 import type { Transaction, TransactionType } from '../../types/transaction';
 import { CATEGORY_META } from '../../constants/categories';
@@ -11,9 +10,7 @@ import type { ExpenseCategory } from '../../types';
 export interface TransactionFormSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  /** 편집 모드일 때 기존 거래 데이터 */
   editTransaction?: Transaction | null;
-  /** 새 거래의 기본 날짜 (캘린더 클릭 시) */
   defaultDate?: string;
   onSave: (tx: Transaction) => void;
   onDelete?: (id: string) => void;
@@ -36,18 +33,15 @@ const INCOME_CATEGORY_EMOJI: Record<string, string> = {
   '미분류': '📎',
 };
 
-/** 새 거래 ID 생성 */
 function generateId(): string {
   return `manual-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-/** 금액 입력값 포맷 (콤마 구분) */
 function formatAmount(value: number): string {
   if (value === 0) return '';
   return value.toLocaleString('ko-KR');
 }
 
-/** 날짜를 "26년 03월 08일" 형태로 포맷 */
 function formatDateKR(dateStr: string): string {
   const d = new Date(dateStr);
   const yy = String(d.getFullYear()).slice(2);
@@ -56,7 +50,6 @@ function formatDateKR(dateStr: string): string {
   return `${yy}년 ${mm}월 ${dd}일`;
 }
 
-/** 시간을 "오전 01:27" 형태로 포맷 */
 function formatTimeKR(timeStr: string): string {
   const parts = timeStr.split(':');
   let h = parseInt(parts[0], 10);
@@ -73,7 +66,6 @@ export function TransactionFormSheet({
   editTransaction,
   defaultDate,
   onSave,
-  onDelete,
 }: TransactionFormSheetProps) {
   // 폼 상태
   const [type, setType] = useState<TransactionType>('지출');
@@ -93,10 +85,8 @@ export function TransactionFormSheet({
   const [showPaymentPicker, setShowPaymentPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // 등록된 자산 목록
   const assets = useAssetStore((s) => s.assets);
 
-  // 시트가 열릴 때 폼 초기화
   useEffect(() => {
     if (isOpen) {
       if (editTransaction) {
@@ -130,7 +120,6 @@ export function TransactionFormSheet({
     }
   }, [isOpen, editTransaction, defaultDate]);
 
-  // 타입 변경 시 카테고리 리셋
   useEffect(() => {
     if (!editTransaction) {
       setCategory('미분류');
@@ -138,22 +127,18 @@ export function TransactionFormSheet({
     }
   }, [type, editTransaction]);
 
-  // 금액 입력 핸들러
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, '');
     setAmount(raw === '' ? 0 : parseInt(raw, 10));
   };
 
-  // 카테고리 선택 핸들러
   const handleCategorySelect = (cat: string, sub: string) => {
     setCategory(cat);
     setSubcategory(sub);
   };
 
-  // 저장 핸들러
   const handleSave = () => {
     if (amount <= 0) return;
-
     const tx: Transaction = {
       id: editTransaction?.id ?? generateId(),
       date,
@@ -173,25 +158,14 @@ export function TransactionFormSheet({
     onClose();
   };
 
-  // 삭제 핸들러
-  const handleDelete = () => {
-    if (editTransaction && onDelete) {
-      onDelete(editTransaction.id);
-      onClose();
-    }
-  };
-
-  // 현재 카테고리의 이모지
   const currentEmoji = type === '지출'
     ? (CATEGORY_META[category as ExpenseCategory]?.emoji ?? '📎')
     : (INCOME_CATEGORY_EMOJI[category] ?? '📎');
 
-  // 카테고리 표시 텍스트
   const categoryDisplay = subcategory
     ? `${category} > ${subcategory}`
     : category;
 
-  // 타입 옵션
   const typeOptions: { label: string; value: string }[] = [
     { label: '수입', value: '수입' },
     { label: '지출', value: '지출' },
@@ -205,9 +179,10 @@ export function TransactionFormSheet({
         onClose={onClose}
         title={editTransaction ? '거래 수정' : '거래 추가'}
       >
-        <div className="flex flex-col">
-          {/* 금액 입력 — 크게 가운데 정렬 */}
-          <div className="flex flex-col items-center py-6 border-b border-border-primary">
+        {/* 스크롤 영역 + 하단 저장 버튼을 위한 여백 */}
+        <div className="flex flex-col pb-20">
+          {/* 금액 입력 */}
+          <div className="flex flex-col items-center py-8 border-b border-border-primary">
             <div className="relative w-full flex items-center justify-center">
               <input
                 type="text"
@@ -225,14 +200,14 @@ export function TransactionFormSheet({
             )}
           </div>
 
-          {/* 분류 타입 토글 — 수입 / 지출 / 이체 */}
-          <div className="flex items-center py-4 border-b border-border-primary">
-            <span className="text-sm text-text-tertiary w-20 shrink-0">분류</span>
+          {/* 분류 타입 토글 */}
+          <div className="flex items-center min-h-[56px] border-b border-border-primary">
+            <span className="text-[15px] text-text-tertiary w-24 shrink-0">분류</span>
             <div className="flex-1 flex justify-end">
               <div className="inline-flex bg-bg-elevated rounded-full p-1">
                 {typeOptions.map((opt) => {
                   const isSelected = opt.value === type;
-                  const isDisabled = opt.value === '이체'; // 이체는 아직 미구현
+                  const isDisabled = opt.value === '이체';
                   return (
                     <button
                       key={opt.value}
@@ -241,7 +216,7 @@ export function TransactionFormSheet({
                         if (!isDisabled) setType(opt.value as TransactionType);
                       }}
                       disabled={isDisabled}
-                      className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                      className={`rounded-full px-5 py-2 text-[15px] font-medium transition-all ${
                         isSelected
                           ? 'bg-bg-card text-text-primary shadow-sm'
                           : isDisabled
@@ -257,31 +232,31 @@ export function TransactionFormSheet({
             </div>
           </div>
 
-          {/* 카테고리 — 클릭하면 CategoryPickerSheet 열기 */}
+          {/* 카테고리 */}
           <button
             type="button"
             onClick={() => setShowCategoryPicker(true)}
-            className="flex items-center py-4 border-b border-border-primary w-full text-left"
+            className="flex items-center min-h-[56px] border-b border-border-primary w-full text-left"
           >
-            <span className="text-sm text-text-tertiary w-20 shrink-0">카테고리</span>
+            <span className="text-[15px] text-text-tertiary w-24 shrink-0">카테고리</span>
             <div className="flex-1 flex items-center justify-end gap-2">
-              <span className="text-sm text-text-primary">
+              <span className="text-[15px] text-text-primary">
                 <span className="mr-1.5">{currentEmoji}</span>
                 {categoryDisplay}
               </span>
-              <span className="text-text-tertiary text-xs">›</span>
+              <span className="text-text-tertiary text-sm">›</span>
             </div>
           </button>
 
           {/* 거래처 */}
-          <div className="flex items-center py-4 border-b border-border-primary">
-            <span className="text-sm text-text-tertiary w-20 shrink-0">거래처</span>
+          <div className="flex items-center min-h-[56px] border-b border-border-primary">
+            <span className="text-[15px] text-text-tertiary w-24 shrink-0">거래처</span>
             <input
               type="text"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="입력하세요"
-              className="flex-1 text-right text-sm bg-transparent text-text-primary placeholder:text-text-tertiary outline-none"
+              className="flex-1 text-right text-[15px] bg-transparent text-text-primary placeholder:text-text-tertiary outline-none"
             />
           </div>
 
@@ -289,14 +264,14 @@ export function TransactionFormSheet({
           <button
             type="button"
             onClick={() => setShowPaymentPicker(!showPaymentPicker)}
-            className="flex items-center py-4 border-b border-border-primary w-full text-left"
+            className="flex items-center min-h-[56px] border-b border-border-primary w-full text-left"
           >
-            <span className="text-sm text-text-tertiary w-20 shrink-0">결제 수단</span>
+            <span className="text-[15px] text-text-tertiary w-24 shrink-0">결제 수단</span>
             <div className="flex-1 flex items-center justify-end gap-2">
-              <span className={`text-sm ${paymentMethod ? 'text-text-primary' : 'text-text-tertiary'}`}>
+              <span className={`text-[15px] ${paymentMethod ? 'text-text-primary' : 'text-text-tertiary'}`}>
                 {paymentMethod || '선택하세요'}
               </span>
-              <span className="text-text-tertiary text-xs">›</span>
+              <span className="text-text-tertiary text-sm">›</span>
             </div>
           </button>
 
@@ -314,15 +289,15 @@ export function TransactionFormSheet({
                       setPaymentMethod(asset.name);
                       setShowPaymentPicker(false);
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center gap-2 px-3 py-3 rounded-lg text-left transition-colors ${
                       paymentMethod === asset.name
                         ? 'bg-accent/15 border border-accent'
                         : 'hover:bg-bg-card-hover border border-transparent'
                     }`}
                   >
-                    <span className="text-sm">{ASSET_TYPE_ICONS_MAP[asset.type]}</span>
+                    <span className="text-base">{ASSET_TYPE_ICONS_MAP[asset.type]}</span>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm truncate ${paymentMethod === asset.name ? 'text-accent' : 'text-text-primary'}`}>
+                      <p className={`text-[15px] truncate ${paymentMethod === asset.name ? 'text-accent' : 'text-text-primary'}`}>
                         {asset.name}
                       </p>
                       <p className="text-xs text-text-tertiary">{asset.institution}</p>
@@ -332,14 +307,13 @@ export function TransactionFormSheet({
               ) : (
                 <p className="text-xs text-text-tertiary text-center py-2">등록된 자산이 없습니다</p>
               )}
-              {/* 직접 입력 옵션 */}
               <div className="pt-2 border-t border-border-primary mt-2">
                 <input
                   type="text"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   placeholder="직접 입력"
-                  className="w-full bg-bg-input border border-border-primary rounded-lg px-3 py-2 text-sm text-text-primary focus:border-accent outline-none transition-colors"
+                  className="w-full bg-bg-input border border-border-primary rounded-lg px-3 py-2.5 text-[15px] text-text-primary focus:border-accent outline-none transition-colors"
                 />
               </div>
             </div>
@@ -348,100 +322,88 @@ export function TransactionFormSheet({
 
           {/* 날짜/시간 */}
           <div
-            className="flex items-center py-4 border-b border-border-primary cursor-pointer"
+            className="flex items-center min-h-[56px] border-b border-border-primary cursor-pointer"
             onClick={() => setShowDatePicker(!showDatePicker)}
           >
-            <span className="text-sm text-text-tertiary w-20 shrink-0">날짜·시간</span>
+            <span className="text-[15px] text-text-tertiary w-24 shrink-0">날짜·시간</span>
             <div className="flex-1 flex items-center justify-end gap-2">
-              <span className="text-sm text-text-primary">
+              <span className="text-[15px] text-text-primary">
                 {formatDateKR(date)} | {formatTimeKR(time)}
               </span>
-              <span className="text-text-tertiary text-xs">›</span>
+              <span className="text-text-tertiary text-sm">›</span>
             </div>
           </div>
 
-          {/* 날짜/시간 입력 (토글) */}
           {showDatePicker && (
             <div className="grid grid-cols-2 gap-3 py-3">
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-bg-input border border-border-primary rounded-lg px-3 py-2.5 text-sm text-text-primary focus:border-accent outline-none transition-colors"
+                className="w-full bg-bg-input border border-border-primary rounded-lg px-3 py-3 text-[15px] text-text-primary focus:border-accent outline-none transition-colors"
               />
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full bg-bg-input border border-border-primary rounded-lg px-3 py-2.5 text-sm text-text-primary focus:border-accent outline-none transition-colors"
+                className="w-full bg-bg-input border border-border-primary rounded-lg px-3 py-3 text-[15px] text-text-primary focus:border-accent outline-none transition-colors"
               />
             </div>
           )}
 
           {/* 메모·태그 */}
-          <div className="flex items-center py-4 border-b border-border-primary">
-            <span className="text-sm text-text-tertiary w-20 shrink-0">메모·태그</span>
+          <div className="flex items-center min-h-[56px] border-b border-border-primary">
+            <span className="text-[15px] text-text-tertiary w-24 shrink-0">메모·태그</span>
             <input
               type="text"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               placeholder="입력하세요"
-              className="flex-1 text-right text-sm bg-transparent text-text-primary placeholder:text-text-tertiary outline-none"
+              className="flex-1 text-right text-[15px] bg-transparent text-text-primary placeholder:text-text-tertiary outline-none"
             />
           </div>
 
           {/* 예산에서 제외 토글 */}
-          <div className="flex items-center justify-between py-4 border-b border-border-primary">
-            <span className="text-sm text-text-primary">예산에서 제외</span>
+          <div className="flex items-center justify-between min-h-[56px] border-b border-border-primary">
+            <span className="text-[15px] text-text-primary">예산에서 제외</span>
             <button
               type="button"
               onClick={() => setExcludeFromBudget(!excludeFromBudget)}
-              className={`w-11 h-6 rounded-full transition-colors relative ${excludeFromBudget ? 'bg-accent' : 'bg-text-tertiary/30'}`}
+              className={`w-12 h-7 rounded-full transition-colors relative ${excludeFromBudget ? 'bg-accent' : 'bg-text-tertiary/30'}`}
             >
-              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeFromBudget ? 'left-[22px]' : 'left-0.5'}`} />
+              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${excludeFromBudget ? 'left-[22px]' : 'left-0.5'}`} />
             </button>
           </div>
 
-          {/* 고정 지출 토글 — 지출일 때만 */}
+          {/* 고정 지출 토글 */}
           {type === '지출' && (
-            <div className="flex items-center justify-between py-4 border-b border-border-primary">
-              <span className="text-sm text-text-primary">고정 지출에 추가</span>
+            <div className="flex items-center justify-between min-h-[56px] border-b border-border-primary">
+              <span className="text-[15px] text-text-primary">고정 지출에 추가</span>
               <button
                 type="button"
                 onClick={() => setIsFixed(!isFixed)}
-                className={`w-11 h-6 rounded-full transition-colors relative ${isFixed ? 'bg-accent' : 'bg-text-tertiary/30'}`}
+                className={`w-12 h-7 rounded-full transition-colors relative ${isFixed ? 'bg-accent' : 'bg-text-tertiary/30'}`}
               >
-                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isFixed ? 'left-[22px]' : 'left-0.5'}`} />
+                <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${isFixed ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             </div>
           )}
+        </div>
 
-          {/* 저장 버튼 */}
-          <div className="pt-5">
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={handleSave}
-              disabled={amount <= 0}
-            >
-              저장
-            </Button>
-          </div>
-
-          {/* 삭제 버튼 — 편집 모드에서만 */}
-          {editTransaction && onDelete && (
-            <div className="pt-2">
-              <Button
-                variant="danger"
-                size="md"
-                fullWidth
-                onClick={handleDelete}
-              >
-                삭제
-              </Button>
-            </div>
-          )}
+        {/* 하단 저장 버튼 — 고정 위치 */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 bg-bg-card">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={amount <= 0}
+            className={`w-full py-4 rounded-2xl text-[17px] font-bold transition-colors ${
+              amount > 0
+                ? 'bg-income text-white active:bg-income/90'
+                : 'bg-text-tertiary/20 text-text-tertiary cursor-not-allowed'
+            }`}
+          >
+            저장
+          </button>
         </div>
       </BottomSheet>
 

@@ -250,23 +250,23 @@ export default function CalendarPage() {
       )}
 
       {/* ========== 툴바: 목록/달력 + 필터 + 검색 + 추가 ========== */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {/* 목록/달력 토글 */}
-          <div className="flex items-center bg-bg-card rounded-lg overflow-hidden">
+          <div className="flex items-center bg-bg-elevated rounded-full p-1">
             <button
               type="button"
               onClick={() => navigate('/transactions')}
-              className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-text-tertiary hover:text-text-secondary transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors"
             >
-              <span className="text-[11px]">☰</span>
+              <span className="text-[14px]">☰</span>
               <span>목록</span>
             </button>
             <button
               type="button"
-              className="flex items-center gap-1 px-3 py-2 text-xs font-medium bg-accent/15 text-accent"
+              className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm"
             >
-              <span className="text-[11px]">📅</span>
+              <span className="text-[14px]">📅</span>
               <span>달력</span>
             </button>
           </div>
@@ -276,14 +276,14 @@ export default function CalendarPage() {
             <button
               type="button"
               onClick={() => setShowFilter(!showFilter)}
-              className={`flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full transition-colors ${
                 filterType !== 'all'
                   ? 'bg-accent/15 text-accent'
-                  : 'bg-bg-card text-text-secondary hover:text-text-primary'
+                  : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
               }`}
             >
               <span>필터</span>
-              <span className="text-[10px]">▾</span>
+              <span className="text-[11px]">▾</span>
             </button>
             {showFilter && (
               <div className="absolute top-full left-0 mt-1 z-30 bg-bg-elevated border border-border-primary rounded-xl shadow-lg overflow-hidden min-w-[100px]">
@@ -292,7 +292,7 @@ export default function CalendarPage() {
                     key={type}
                     type="button"
                     onClick={() => { setFilterType(type); setShowFilter(false); }}
-                    className={`w-full px-4 py-2.5 text-xs text-left transition-colors ${
+                    className={`w-full px-4 py-3 text-sm text-left transition-colors ${
                       filterType === type
                         ? 'bg-accent/10 text-accent font-medium'
                         : 'text-text-secondary hover:bg-bg-card-hover'
@@ -306,16 +306,16 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {/* 검색 */}
           <button
             type="button"
             onClick={() => setShowSearch(!showSearch)}
-            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
-              showSearch ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-card'
+            className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+              showSearch ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
             }`}
           >
-            <span className="text-base">🔍</span>
+            <span className="text-lg">🔍</span>
           </button>
 
           {/* 거래 추가 */}
@@ -329,9 +329,9 @@ export default function CalendarPage() {
               }
               setShowAddForm(true);
             }}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-card transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
           >
-            <span className="text-xl font-light">+</span>
+            <span className="text-2xl font-light">+</span>
           </button>
         </div>
       </div>
@@ -503,12 +503,13 @@ export default function CalendarPage() {
           })()}
 
           {selectedDayTransactions.length > 0 ? (
-            <div className="space-y-0">
+            <div className="overflow-hidden rounded-xl">
               {selectedDayTransactions.map((tx) => (
                 <TransactionListItem
                   key={tx.id}
                   transaction={tx}
                   onClick={() => setEditingTx(tx)}
+                  onDelete={deleteTransaction}
                 />
               ))}
             </div>

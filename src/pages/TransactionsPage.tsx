@@ -122,7 +122,7 @@ export default function TransactionsPage() {
   const hasTransactions = filteredTransactions.length > 0;
 
   return (
-    <div className="flex flex-col gap-4 pb-4 animate-fade-in">
+    <div className="flex flex-col gap-4 pb-24 animate-fade-in">
       {/* 헤더: 가계부 + 카테고리 관리 + 총 지출 */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-text-primary">가계부</h1>
@@ -162,29 +162,29 @@ export default function TransactionsPage() {
       </div>
 
       {/* 목록 | 달력 + 타입 필터 토글 */}
-      <div className="flex items-center justify-between">
-        <ToggleGroup
-          options={TOGGLE_OPTIONS}
-          selected={typeFilter}
-          onChange={(val) => setTypeFilter(val as TypeFilter)}
-        />
-        <div className="flex items-center bg-bg-card rounded-lg overflow-hidden">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 bg-bg-elevated rounded-full p-1">
           <button
             type="button"
-            className="flex items-center gap-1 px-3 py-2 text-xs font-medium bg-accent/15 text-accent"
+            className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm"
           >
-            <span className="text-[11px]">☰</span>
+            <span className="text-[14px]">☰</span>
             <span>목록</span>
           </button>
           <button
             type="button"
             onClick={() => navigate('/calendar')}
-            className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-text-tertiary hover:text-text-secondary transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors"
           >
-            <span className="text-[11px]">📅</span>
+            <span className="text-[14px]">📅</span>
             <span>달력</span>
           </button>
         </div>
+        <ToggleGroup
+          options={TOGGLE_OPTIONS}
+          selected={typeFilter}
+          onChange={(val) => setTypeFilter(val as TypeFilter)}
+        />
       </div>
 
       {/* 검색/필터 바 */}
@@ -356,12 +356,13 @@ export default function TransactionsPage() {
                   income={summary?.income}
                   expense={summary?.expense}
                 />
-                <div className="bg-bg-card rounded-[12px] px-3">
+                <div className="bg-bg-card rounded-[14px] px-3 overflow-hidden">
                   {txns.map((tx) => (
                     <TransactionListItem
                       key={tx.id}
                       transaction={tx}
                       onClick={() => setEditingTx(tx)}
+                      onDelete={deleteTransaction}
                     />
                   ))}
                 </div>
