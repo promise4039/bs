@@ -90,33 +90,33 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
         onClick={handleClick}
       >
         <div
-          className={`flex items-center gap-3 py-3 px-2 border-b border-border-primary/30${
+          className={`flex items-center gap-3 py-3.5 px-3${
             onClick ? ' cursor-pointer active:bg-bg-elevated/50' : ''
           }`}
         >
-          {/* 왼쪽: 카테고리 아이콘 */}
+          {/* 왼쪽: 카테고리 아이콘 (컬러 배경) */}
           <CategoryIcon category={category} size="md" />
 
           {/* 중앙: 거래명 + 서브정보 */}
-          <div className="flex flex-col flex-1 min-w-0 gap-0.5">
-            <span className="text-[14px] text-text-primary font-medium truncate leading-tight">
+          <div className="flex flex-col flex-1 min-w-0 gap-1">
+            <span className="text-[14px] text-text-primary font-medium truncate">
               {content}
             </span>
             {subInfo && (
-              <span className="text-[11px] text-text-tertiary truncate leading-tight">
+              <span className="text-[11px] text-text-tertiary truncate">
                 {subInfo}
               </span>
             )}
             {memo && (
-              <span className="text-[11px] text-text-tertiary/70 truncate leading-tight">
-                {memo}
+              <span className="text-[11px] text-text-tertiary/60 truncate">
+                💬 {memo}
               </span>
             )}
           </div>
 
           {/* 오른쪽: 금액 */}
           <span
-            className={`font-semibold text-[14px] whitespace-nowrap tabular-nums ${
+            className={`font-bold text-[15px] whitespace-nowrap tabular-nums ${
               type === '수입' ? 'text-income' : 'text-text-primary'
             }`}
           >

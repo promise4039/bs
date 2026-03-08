@@ -116,9 +116,9 @@ export default function HomePage() {
 
       {/* ========== 지난달 비교 배너 ========== */}
       {expenseDiff !== null && (
-        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3.5 mx-0.5">
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <span className="text-[18px]">{expenseDiff > 0 ? '😊' : '😰'}</span>
+            <span className="w-7 h-7 rounded-full bg-[#fbbf24]/20 flex items-center justify-center text-[14px]">🪙</span>
             <span className="text-[13px] text-text-primary leading-snug">
               지난달 이때보다{' '}
               <span className={`font-bold ${expenseDiff > 0 ? 'text-income' : 'text-expense'}`}>
@@ -130,43 +130,35 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => navigate('/stats')}
-            className="text-[12px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
+            className="text-[12px] text-text-secondary bg-bg-elevated px-3 py-1.5 rounded-full hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
           >
             분석
           </button>
         </div>
       )}
 
-      {/* ========== 이번 달 예산 요약 ========== */}
-      <Card>
-        <div className="flex flex-col gap-3.5">
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] text-text-tertiary font-medium">이번 달 예산</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[22px] font-bold text-text-primary tabular-nums">
-                  {formatNumber(totalExpense)}
-                  <span className="text-[13px] font-normal text-text-secondary">원</span>
-                </span>
-                <span className="text-[12px] text-text-tertiary">
-                  / {formatKRW(totalBudget)}
-                </span>
-              </div>
-            </div>
+      {/* ========== 이번 달 예산 (뱅크샐러드 스타일 슬림 배너) ========== */}
+      <div
+        className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3.5 cursor-pointer hover:bg-bg-card-hover transition-colors"
+        onClick={() => navigate('/settings')}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-[16px]">🗓</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[13px] text-text-primary font-medium">이번 달 예산</span>
             {totalRatio > 1 && <Badge text="초과" color="red" />}
           </div>
-          <ProgressBar value={totalExpense} max={totalBudget} size="md" showLabel />
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => navigate('/settings')}
-              className="text-[12px] text-text-tertiary hover:text-text-secondary transition-colors font-medium bg-transparent border-none cursor-pointer"
-            >
-              설정하기 ›
-            </button>
-          </div>
         </div>
-      </Card>
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] text-text-secondary tabular-nums">{formatKRW(totalExpense)} / {formatKRW(totalBudget)}</span>
+          <span className="text-text-tertiary text-[14px]">›</span>
+        </div>
+      </div>
+
+      {/* 예산 프로그레스 바 (슬림) */}
+      <div className="px-1 -mt-3">
+        <ProgressBar value={totalExpense} max={totalBudget} size="sm" />
+      </div>
 
       {/* ========== 카테고리별 예산 소진율 ========== */}
       <div>

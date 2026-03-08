@@ -234,9 +234,9 @@ export default function CalendarPage() {
 
       {/* ========== 지난달 비교 배너 ========== */}
       {expenseDiff && expenseDiff.prevTotal > 0 && (
-        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3.5 mx-0.5">
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3 mx-0.5">
           <div className="flex items-center gap-2.5">
-            <span className="text-[18px]">{expenseDiff.diff > 0 ? '😊' : '😰'}</span>
+            <span className="w-7 h-7 rounded-full bg-[#fbbf24]/20 flex items-center justify-center text-[14px]">🪙</span>
             <span className="text-[13px] text-text-primary leading-snug">
               지난달 이때보다{' '}
               <span className={`font-bold ${expenseDiff.diff > 0 ? 'text-income' : 'text-expense'}`}>
@@ -248,7 +248,7 @@ export default function CalendarPage() {
           <button
             type="button"
             onClick={() => navigate('/comparison')}
-            className="text-[12px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
+            className="text-[12px] text-text-secondary bg-bg-elevated px-3 py-1.5 rounded-full hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
           >
             분석
           </button>

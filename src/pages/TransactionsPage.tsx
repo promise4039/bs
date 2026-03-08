@@ -106,42 +106,58 @@ export default function TransactionsPage() {
 
   return (
     <div className="flex flex-col pb-24 animate-fade-in">
-      {/* ========== 헤더: 가계부 + 총 지출 (IMG_1501 상단) ========== */}
+      {/* ========== 헤더: 가계부 + 아이콘들 (뱅크샐러드 상단) ========== */}
       <div className="flex items-center justify-between pt-2 pb-1 px-1">
-        <h1 className="text-[18px] font-bold text-text-primary">가계부</h1>
-        <div className="flex items-center gap-1.5">
+        <h1 className="text-[22px] font-bold text-text-primary tracking-tight">가계부</h1>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => navigate('/sinking-fund')}
+            className="w-9 h-9 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
+            title="싱킹펀드"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
           <button
             type="button"
             onClick={() => navigate('/categories')}
-            className="text-text-tertiary hover:text-text-primary text-base bg-transparent border-none cursor-pointer transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
             title="카테고리 관리"
           >
-            ⚙️
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/settings')}
+            className="w-9 h-9 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
+            title="설정"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>
       </div>
 
-      {/* ========== 월 네비게이터 + 총 지출액 (IMG_1501: 같은 줄) ========== */}
-      <div className="flex items-center justify-between px-1 py-2">
+      {/* ========== 월 네비게이터 + 총 지출액 ========== */}
+      <div className="flex items-center justify-between px-1 py-1">
         {/* 좌측: < 3월 > */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setMonth(prevMonth)}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
           >
             ‹
           </button>
-          <span className="text-[16px] font-bold text-text-primary min-w-[2.5rem] text-center">
+          <span className="text-[17px] font-bold text-text-primary min-w-[3rem] text-center">
             {formatMonthLabel(currentMonth)}
           </span>
           <button
             type="button"
             disabled={!canGoNextMonth}
             onClick={() => canGoNextMonth && setMonth(nextMonth)}
-            className={`w-8 h-8 flex items-center justify-center rounded-full text-lg transition-colors ${
+            className={`w-8 h-8 flex items-center justify-center rounded-full text-lg transition-colors bg-transparent border-none ${
               canGoNextMonth
-                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer'
                 : 'text-text-tertiary opacity-30 cursor-not-allowed'
             }`}
           >
@@ -149,34 +165,32 @@ export default function TransactionsPage() {
           </button>
         </div>
 
-        {/* 우측: 총 지출액 (큰 폰트, 볼드) */}
-        <div className="text-right">
-          <span className="text-[20px] font-bold text-text-primary tabular-nums">
-            {formatNumber(totalExpense)}원
-          </span>
-        </div>
-      </div>
-
-      {/* ========== 수입/지출 요약 한 줄 (IMG_1501) ========== */}
-      <div className="flex items-center gap-4 px-2 pb-3">
-        <span className="text-[13px]">
-          <span className="text-text-secondary">수입 </span>
-          <span className="text-income font-medium tabular-nums">+{formatNumber(totalIncome)}원</span>
-        </span>
-        <span className="text-[13px]">
-          <span className="text-text-secondary">지출 </span>
-          <span className="text-text-primary font-medium tabular-nums">-{formatNumber(totalExpense)}원</span>
+        {/* 우측: 총 지출액 */}
+        <span className="text-[22px] font-bold text-text-primary tabular-nums tracking-tight">
+          {formatNumber(totalExpense)}<span className="text-[15px] text-text-secondary font-semibold">원</span>
         </span>
       </div>
 
-      {/* ========== 지난달 비교 카드 ========== */}
+      {/* ========== 수입/지출 요약 ========== */}
+      <div className="flex items-center gap-4 px-2 pb-2">
+        <span className="text-[13px]">
+          <span className="text-text-tertiary">수입 </span>
+          <span className="text-income font-semibold tabular-nums">+{formatNumber(totalIncome)}원</span>
+        </span>
+        <span className="text-[13px]">
+          <span className="text-text-tertiary">지출 </span>
+          <span className="text-text-primary font-semibold tabular-nums">-{formatNumber(totalExpense)}원</span>
+        </span>
+      </div>
+
+      {/* ========== 지난달 비교 배너 ========== */}
       {expenseDiff !== null && (
         <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3 mx-1 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[15px]">{expenseDiff > 0 ? '😊' : '😰'}</span>
+          <div className="flex items-center gap-2.5">
+            <span className="w-7 h-7 rounded-full bg-[#fbbf24]/20 flex items-center justify-center text-[14px]">🪙</span>
             <span className="text-[13px] text-text-primary">
               지난달 이때보다{' '}
-              <span className={expenseDiff > 0 ? 'text-income font-semibold' : 'text-expense font-semibold'}>
+              <span className={`font-bold ${expenseDiff > 0 ? 'text-income' : 'text-expense'}`}>
                 {formatNumber(Math.abs(expenseDiff))}원
               </span>
               {expenseDiff > 0 ? ' 덜' : ' 더'} 쓰는 중
@@ -185,7 +199,7 @@ export default function TransactionsPage() {
           <button
             type="button"
             onClick={() => navigate('/stats')}
-            className="text-[12px] text-text-tertiary bg-bg-elevated px-2.5 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors"
+            className="text-[12px] text-text-secondary bg-bg-elevated px-3 py-1.5 rounded-full hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
           >
             분석
           </button>
