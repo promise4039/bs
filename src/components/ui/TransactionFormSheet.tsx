@@ -166,7 +166,24 @@ export function TransactionFormSheet({
 
   return (
     <>
-      <BottomSheet isOpen={isOpen} onClose={onClose}>
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={onClose}
+        footer={
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={amount <= 0}
+            className={`w-full h-[52px] rounded-[14px] text-[16px] font-bold transition-colors ${
+              amount > 0
+                ? 'bg-accent text-white active:bg-accent-hover'
+                : 'bg-text-tertiary/15 text-text-tertiary cursor-not-allowed'
+            }`}
+          >
+            저장
+          </button>
+        }
+      >
         <div className="flex flex-col min-h-full">
           {/* 헤더 제목 */}
           <div className="text-center pt-1 pb-2">
@@ -176,7 +193,7 @@ export function TransactionFormSheet({
           </div>
 
           {/* 스크롤 콘텐츠 */}
-          <div className="flex-1 pb-28">
+          <div className="flex-1">
             {/* 금액 입력 영역 — IMG_1500: 중앙 정렬, 큰 폰트, "0원" */}
             <div className="flex flex-col items-center py-8 border-b border-border-primary/50">
               <div className="flex items-baseline gap-1">
@@ -374,22 +391,6 @@ export function TransactionFormSheet({
                 </button>
               </div>
             )}
-          </div>
-
-          {/* 저장 버튼 — IMG_1500: 하단 고정, 풀폭, 둥근 초록 버튼 */}
-          <div className="sticky bottom-0 pt-3 pb-6 bg-bg-card">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={amount <= 0}
-              className={`w-full h-[52px] rounded-[14px] text-[16px] font-bold transition-colors ${
-                amount > 0
-                  ? 'bg-accent text-white active:bg-accent-hover'
-                  : 'bg-text-tertiary/15 text-text-tertiary cursor-not-allowed'
-              }`}
-            >
-              저장
-            </button>
           </div>
         </div>
       </BottomSheet>
