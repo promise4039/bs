@@ -116,7 +116,7 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
 
           {/* 오른쪽: 금액 */}
           <span
-            className={`font-bold text-[15px] whitespace-nowrap tabular-nums ${
+            className={`font-bold text-[16px] whitespace-nowrap tabular-nums ${
               type === '수입' ? 'text-income' : 'text-text-primary'
             }`}
           >

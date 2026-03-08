@@ -43,14 +43,14 @@ export function DateDivider({ date, income = 0, expense = 0 }: DateDividerProps)
   const label = formatDateWithRelative(date);
 
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-2.5 bg-bg-app/95 backdrop-blur-sm border-b border-border-primary/30">
+    <div className="sticky top-0 z-10 flex items-center justify-between h-[40px] px-4 bg-bg-app/95 backdrop-blur-sm border-b border-border-primary/30">
       {/* 왼쪽: 날짜 라벨 */}
-      <span className="text-[13px] text-text-primary font-semibold tracking-tight">
+      <span className="text-[14px] text-text-primary font-semibold tracking-tight">
         {label}
       </span>
 
       {/* 오른쪽: 수입/지출 합계 */}
-      <div className="flex items-center gap-2.5 text-[12px]">
+      <div className="flex items-center gap-3 text-[13px]">
         {income > 0 && (
           <span className="text-income font-medium tabular-nums">+{formatNumber(income)}원</span>
         )}
