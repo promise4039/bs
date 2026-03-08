@@ -1,12 +1,9 @@
-// 통계 페이지 — 도넛 차트 + 카테고리 비중 + 지출 속도 라인 차트
+// 통계 페이지 — 뱅크샐러드 스타일 도넛 차트 + 카테고리 비중 + 지출 속도 라인 차트
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card,
-  Button,
   EmptyState,
-  SectionHeader,
-  ToggleGroup,
   DonutChart,
   SpendingLineChart,
 } from '../components/ui';
@@ -186,49 +183,86 @@ export default function StatsPage() {
   const effectiveMax = canGoNext ? undefined : currentMonth;
   const canGoNextMonth = !effectiveMax || nextMonthNav <= effectiveMax;
 
+  // 지난달 대비 차이
+  const prevMonthSummary = useMonthlySummary(prevMonth);
+  const expenseDiff = summary.totalExpense - prevMonthSummary.totalExpense;
+
   return (
-    <div className="pb-28 space-y-4">
+    <div className="pb-28 animate-fade-in">
       {/* ========== 헤더 ========== */}
-      <div className="flex items-center justify-between pt-1">
-        <h1 className="text-xl font-bold text-text-primary">통계</h1>
+      <div className="flex items-center justify-between pt-2 pb-4 px-1">
+        <h1 className="text-[22px] font-bold text-text-primary tracking-tight">통계</h1>
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          className="text-[14px] text-accent font-medium bg-transparent border-none cursor-pointer"
+        >
+          설정
+        </button>
       </div>
 
-      {/* ========== 월 네비게이터 + 지출/수입 토글 ========== */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setMonth(prevMonthNav)}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-xl text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
-          >
-            ‹
-          </button>
-          <span className="text-lg font-bold text-text-primary min-w-[3rem] text-center">
-            {formatMonthLabel(currentMonth)}
-          </span>
-          <button
-            type="button"
-            disabled={!canGoNextMonth}
-            onClick={() => canGoNextMonth && setMonth(nextMonthNav)}
-            className={`w-9 h-9 flex items-center justify-center rounded-full text-xl transition-colors ${
-              canGoNextMonth
-                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
-                : 'text-text-tertiary opacity-30 cursor-not-allowed'
-            }`}
-          >
-            ›
-          </button>
-        </div>
-        <ToggleGroup
-          options={[
-            { label: '지출', value: 'expense' },
-            { label: '수입', value: 'income' },
-          ]}
-          selected={viewType}
-          onChange={(v) => setViewType(v as 'expense' | 'income')}
-          compact
-        />
+      {/* ========== 월 네비게이터 ========== */}
+      <div className="flex items-center justify-center gap-3 mb-5">
+        <button
+          type="button"
+          onClick={() => setMonth(prevMonthNav)}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-accent/15 text-accent text-lg font-bold transition-all active:scale-95"
+        >
+          &lsaquo;
+        </button>
+        <span className="text-[18px] font-bold text-text-primary min-w-[4rem] text-center">
+          {formatMonthLabel(currentMonth)}
+        </span>
+        <button
+          type="button"
+          disabled={!canGoNextMonth}
+          onClick={() => canGoNextMonth && setMonth(nextMonthNav)}
+          className={`w-10 h-10 flex items-center justify-center rounded-full text-lg font-bold transition-all active:scale-95 ${
+            canGoNextMonth
+              ? 'bg-accent/15 text-accent'
+              : 'bg-bg-elevated text-text-tertiary opacity-40 cursor-not-allowed'
+          }`}
+        >
+          &rsaquo;
+        </button>
       </div>
+
+      {/* ========== 지출/수입 요약 배너 ========== */}
+      <Card className="mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-5">
+            <button
+              type="button"
+              onClick={() => setViewType('expense')}
+              className={`bg-transparent border-none cursor-pointer transition-colors ${
+                viewType === 'expense' ? 'opacity-100' : 'opacity-50'
+              }`}
+            >
+              <p className="text-[12px] text-text-tertiary mb-0.5">지출</p>
+              <p className="text-[20px] font-bold text-expense">{formatKRW(summary.totalExpense)}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewType('income')}
+              className={`bg-transparent border-none cursor-pointer transition-colors ${
+                viewType === 'income' ? 'opacity-100' : 'opacity-50'
+              }`}
+            >
+              <p className="text-[12px] text-text-tertiary mb-0.5">수입</p>
+              <p className="text-[20px] font-bold text-income">{formatKRW(summary.totalIncome)}</p>
+            </button>
+          </div>
+          {viewType === 'expense' && expenseDiff !== 0 && (
+            <div className={`text-[12px] px-2.5 py-1 rounded-full font-medium ${
+              expenseDiff > 0
+                ? 'bg-expense/15 text-expense'
+                : 'bg-income/15 text-income'
+            }`}>
+              {expenseDiff > 0 ? '+' : ''}{formatKRW(expenseDiff)}
+            </div>
+          )}
+        </div>
+      </Card>
 
       {!hasData ? (
         <EmptyState
@@ -237,9 +271,9 @@ export default function StatsPage() {
           description="설정에서 뱅크샐러드 엑셀 파일을 import 해주세요."
         />
       ) : (
-        <>
-          {/* 도넛 차트 섹션 */}
-          <Card className="flex flex-col items-center">
+        <div className="space-y-4">
+          {/* ========== 도넛 차트 섹션 ========== */}
+          <Card className="flex flex-col items-center py-6">
             <DonutChart
               data={donutData}
               centerLabel={viewType === 'expense' ? '총 지출' : '총 수입'}
@@ -249,85 +283,116 @@ export default function StatsPage() {
             />
           </Card>
 
-          {/* 카테고리 범례 리스트 */}
-          <Card className="space-y-1">
-            {legendData.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => navigate(`/category/${encodeURIComponent(item.label)}`)}
-                className="flex items-center w-full py-2.5 px-1 rounded-xl hover:bg-bg-card-hover transition-colors cursor-pointer bg-transparent border-none text-left"
-              >
-                {/* 컬러 도트 + 카테고리명 + 퍼센트 */}
-                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          {/* ========== 카테고리 범례 리스트 ========== */}
+          <Card className="!p-0">
+            <div className="divide-y divide-border-primary/40">
+              {legendData.map((item, idx) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => navigate(`/category/${encodeURIComponent(item.label)}`)}
+                  className={`flex items-center w-full py-3.5 px-4 hover:bg-bg-card-hover transition-colors cursor-pointer bg-transparent border-none text-left ${
+                    idx === 0 ? 'rounded-t-[16px]' : ''
+                  } ${idx === legendData.length - 1 ? 'rounded-b-[16px]' : ''}`}
+                >
+                  {/* 순위 번호 */}
+                  <span className="text-[12px] text-text-tertiary font-medium w-5 shrink-0">
+                    {idx + 1}
+                  </span>
+
+                  {/* 컬러 도트 */}
                   <span
-                    className="w-3 h-3 rounded-full shrink-0"
+                    className="w-3 h-3 rounded-full shrink-0 mr-2.5"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-sm text-text-primary truncate">
-                    {item.label}
-                  </span>
-                  <span className="text-xs text-text-tertiary shrink-0">
-                    {formatPercent(item.percent)}
-                  </span>
-                </div>
 
-                {/* 금액 + 화살표 */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-sm font-medium text-text-primary">
-                    {formatKRW(item.value)}
-                  </span>
-                  <span className="text-text-tertiary text-xs">›</span>
-                </div>
-              </button>
-            ))}
+                  {/* 카테고리명 + 퍼센트 */}
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-[14px] text-text-primary font-medium truncate">
+                      {item.label}
+                    </span>
+                    <span className="text-[12px] text-text-tertiary shrink-0">
+                      {formatPercent(item.percent)}
+                    </span>
+                  </div>
+
+                  {/* 금액 + 화살표 */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[14px] font-semibold text-text-primary tabular-nums">
+                      {formatKRW(item.value)}
+                    </span>
+                    <span className="text-text-tertiary text-[14px]">&rsaquo;</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </Card>
 
-          {/* 구분선 */}
-          <hr className="border-border-primary" />
-
-          {/* 지출 속도 섹션 (지출 모드일 때만) */}
+          {/* ========== 지출 속도 섹션 (지출 모드일 때만) ========== */}
           {viewType === 'expense' && (
-            <section>
-              <SectionHeader title="지출 속도" />
-              {/* 기간 토글 */}
-              <div className="flex gap-2 mb-3">
-                {(['monthly', 'weekly', 'daily'] as const).map((period) => (
-                  <button
-                    key={period}
-                    type="button"
-                    onClick={() => setSpendingPeriod(period)}
-                    className={`px-4 py-2 text-sm rounded-[10px] border transition-colors ${
-                      spendingPeriod === period
-                        ? 'bg-bg-card border-text-primary text-text-primary font-medium'
-                        : 'bg-transparent border-border-primary text-text-tertiary hover:text-text-secondary'
-                    }`}
-                  >
-                    {period === 'monthly' ? '월별' : period === 'weekly' ? '주별' : '일별'}
-                  </button>
-                ))}
+            <section className="mt-6">
+              <div className="flex items-center justify-between px-1 mb-4">
+                <h2 className="text-[17px] font-bold text-text-primary">지출 속도</h2>
+              </div>
+
+              {/* 기간 토글 — 뱅크샐러드 pill 스타일 */}
+              <div className="flex gap-2 mb-4 px-1">
+                {(['monthly', 'weekly', 'daily'] as const).map((period) => {
+                  const isActive = spendingPeriod === period;
+                  return (
+                    <button
+                      key={period}
+                      type="button"
+                      onClick={() => setSpendingPeriod(period)}
+                      className={`px-4 py-2 text-[13px] rounded-full border transition-all ${
+                        isActive
+                          ? 'bg-text-primary border-text-primary text-bg-app font-semibold'
+                          : 'bg-transparent border-border-secondary text-text-secondary hover:border-text-tertiary'
+                      }`}
+                    >
+                      {period === 'monthly' ? '월별' : period === 'weekly' ? '주별' : '일별'}
+                    </button>
+                  );
+                })}
               </div>
 
               <Card>
                 {/* 일별: 기존 누적 라인 차트 */}
                 {spendingPeriod === 'daily' && (
-                  <SpendingLineChart
-                    datasets={[
-                      {
-                        label: '이번 달',
-                        data: currentCumulative,
-                        color: '#6c9fff',
-                      },
-                      {
-                        label: '지난 달',
-                        data: prevCumulative,
-                        color: '#636366',
-                        dashed: true,
-                      },
-                    ]}
-                    xLabels={xLabels}
-                    height={200}
-                  />
+                  <>
+                    <SpendingLineChart
+                      datasets={[
+                        {
+                          label: '이번 달',
+                          data: currentCumulative,
+                          color: '#6c9fff',
+                        },
+                        {
+                          label: '지난 달',
+                          data: prevCumulative,
+                          color: '#636366',
+                          dashed: true,
+                        },
+                      ]}
+                      xLabels={xLabels}
+                      height={200}
+                    />
+                    {/* 범례 */}
+                    <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-border-primary/60">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-1 rounded-full bg-[#6c9fff]" />
+                        <span className="text-[12px] text-text-secondary">
+                          {parseInt(currentMonth.split('-')[1])}월 {formatKRW(summary.totalExpense)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-1 rounded-full bg-[#636366]" />
+                        <span className="text-[12px] text-text-tertiary">
+                          {parseInt(prevMonth.split('-')[1])}월 {formatKRW(prevMonthSummary.totalExpense)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 {/* 주별: 바 차트 */}
@@ -337,12 +402,12 @@ export default function StatsPage() {
                       {/* 평균선 */}
                       {weeklyData.length > 0 && Math.max(...weeklyData) > 0 && (
                         <div
-                          className="absolute left-0 right-0 border-t border-dashed border-text-tertiary/50 pointer-events-none"
+                          className="absolute left-0 right-0 border-t border-dashed border-text-tertiary/40 pointer-events-none"
                           style={{
                             bottom: `${(weeklyAvg / Math.max(...weeklyData)) * 160 + 20}px`,
                           }}
                         >
-                          <span className="absolute right-0 -top-4 text-[10px] text-text-tertiary">
+                          <span className="absolute right-0 -top-4 text-[10px] text-text-tertiary bg-bg-card px-1">
                             평균
                           </span>
                         </div>
@@ -355,27 +420,26 @@ export default function StatsPage() {
                             key={weeklyLabels[i]}
                             className="flex-1 flex flex-col items-center gap-1"
                           >
-                            <span className="text-[10px] text-text-secondary font-medium">
+                            <span className="text-[10px] text-text-secondary font-medium tabular-nums">
                               {Math.round(amount / 10000)}만
                             </span>
                             <div
-                              className="w-full rounded-t-md"
+                              className="w-full rounded-t-lg transition-all"
                               style={{
                                 height: `${Math.max(height, 4)}px`,
-                                backgroundColor: '#6c9fff',
-                                opacity: 0.85,
+                                background: 'linear-gradient(180deg, #6c9fff 0%, #6c9fff88 100%)',
                               }}
                             />
-                            <span className="text-[10px] text-text-tertiary">
+                            <span className="text-[11px] text-text-tertiary font-medium">
                               {weeklyLabels[i]}
                             </span>
                           </div>
                         );
                       })}
                     </div>
-                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-primary">
-                      <span className="text-sm text-text-secondary">주별 평균지출</span>
-                      <span className="text-sm font-semibold text-accent">
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-primary/60">
+                      <span className="text-[13px] text-text-secondary">주별 평균지출</span>
+                      <span className="text-[14px] font-bold text-accent tabular-nums">
                         {Math.round(weeklyAvg).toLocaleString('ko-KR')}원
                       </span>
                     </div>
@@ -389,12 +453,12 @@ export default function StatsPage() {
                       {/* 평균선 */}
                       {monthlyBarData.length > 0 && Math.max(...monthlyBarData.map((d) => d.total)) > 0 && (
                         <div
-                          className="absolute left-0 right-0 border-t border-dashed border-text-tertiary/50 pointer-events-none"
+                          className="absolute left-0 right-0 border-t border-dashed border-text-tertiary/40 pointer-events-none"
                           style={{
                             bottom: `${(monthlyAvg / Math.max(...monthlyBarData.map((d) => d.total))) * 160 + 20}px`,
                           }}
                         >
-                          <span className="absolute right-0 -top-4 text-[10px] text-text-tertiary">
+                          <span className="absolute right-0 -top-4 text-[10px] text-text-tertiary bg-bg-card px-1">
                             평균
                           </span>
                         </div>
@@ -408,7 +472,7 @@ export default function StatsPage() {
                             key={item.month}
                             className="flex-1 flex flex-col items-center gap-1"
                           >
-                            <span className="text-[10px] text-text-secondary font-medium">
+                            <span className="text-[10px] text-text-secondary font-medium tabular-nums">
                               {item.total >= 10000
                                 ? `${Math.round(item.total / 10000)}만`
                                 : item.total > 0
@@ -416,15 +480,16 @@ export default function StatsPage() {
                                   : '0'}
                             </span>
                             <div
-                              className="w-full rounded-t-md"
+                              className="w-full rounded-t-lg transition-all"
                               style={{
                                 height: `${Math.max(height, 4)}px`,
-                                backgroundColor: isCurrent ? '#6c9fff' : '#636366',
-                                opacity: isCurrent ? 0.9 : 0.5,
+                                background: isCurrent
+                                  ? 'linear-gradient(180deg, #6c9fff 0%, #6c9fff88 100%)'
+                                  : 'linear-gradient(180deg, #48484a 0%, #48484a88 100%)',
                               }}
                             />
                             <span
-                              className={`text-[10px] ${isCurrent ? 'text-accent font-medium' : 'text-text-tertiary'}`}
+                              className={`text-[11px] font-medium ${isCurrent ? 'text-accent' : 'text-text-tertiary'}`}
                             >
                               {item.label}
                             </span>
@@ -432,9 +497,9 @@ export default function StatsPage() {
                         );
                       })}
                     </div>
-                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-primary">
-                      <span className="text-sm text-text-secondary">월별 평균지출</span>
-                      <span className="text-sm font-semibold text-accent">
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-primary/60">
+                      <span className="text-[13px] text-text-secondary">월별 평균지출</span>
+                      <span className="text-[14px] font-bold text-accent tabular-nums">
                         {Math.round(monthlyAvg).toLocaleString('ko-KR')}원
                       </span>
                     </div>
@@ -444,11 +509,17 @@ export default function StatsPage() {
             </section>
           )}
 
-          {/* 월별 비교 분석 버튼 */}
-          <Button variant="secondary" fullWidth onClick={() => navigate('/comparison')}>
-            월별 비교 분석
-          </Button>
-        </>
+          {/* ========== 월별 비교 분석 버튼 ========== */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => navigate('/comparison')}
+              className="w-full py-3 rounded-[12px] bg-bg-elevated text-text-primary text-[14px] font-medium hover:bg-bg-card-hover transition-colors"
+            >
+              월별 비교 분석
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -4,18 +4,20 @@ export interface ProgressBarProps {
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   className?: string;
+  /** 색상을 직접 지정 (기본: 비율에 따라 자동 결정) */
+  color?: string;
 }
 
 const sizeStyles: Record<NonNullable<ProgressBarProps['size']>, string> = {
-  sm: 'h-1.5',
-  md: 'h-2.5',
-  lg: 'h-3.5',
+  sm: 'h-1',       /* 4px */
+  md: 'h-1.5',     /* 6px */
+  lg: 'h-2',       /* 8px */
 };
 
-function getBarStyle(ratio: number): string {
-  if (ratio > 1.0) return 'bg-gradient-to-r from-progress-danger/80 to-progress-danger';
-  if (ratio >= 0.7) return 'bg-gradient-to-r from-progress-warning/80 to-progress-warning';
-  return 'bg-gradient-to-r from-progress-normal/80 to-progress-normal';
+function getBarColor(ratio: number): string {
+  if (ratio > 1.0) return 'bg-progress-danger';
+  if (ratio >= 0.7) return 'bg-progress-warning';
+  return 'bg-progress-normal';
 }
 
 export function ProgressBar({
@@ -24,6 +26,7 @@ export function ProgressBar({
   size = 'md',
   showLabel = false,
   className = '',
+  color,
 }: ProgressBarProps) {
   const ratio = max > 0 ? value / max : 0;
   const widthPercent = Math.min(ratio * 100, 100);
@@ -31,14 +34,19 @@ export function ProgressBar({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <div className={`flex-1 bg-progress-bg/60 rounded-full ${sizeStyles[size]} overflow-hidden`}>
+      <div className={`flex-1 bg-progress-bg rounded-full ${sizeStyles[size]} overflow-hidden`}>
         <div
-          className={`${sizeStyles[size]} rounded-full ${getBarStyle(ratio)} transition-all duration-500`}
-          style={{ width: `${widthPercent}%` }}
+          className={`${sizeStyles[size]} rounded-full transition-all duration-500 ease-out ${
+            color ? '' : getBarColor(ratio)
+          }`}
+          style={{
+            width: `${widthPercent}%`,
+            ...(color ? { backgroundColor: color } : {}),
+          }}
         />
       </div>
       {showLabel && (
-        <span className="text-xs text-text-secondary whitespace-nowrap">
+        <span className="text-[11px] text-text-secondary tabular-nums whitespace-nowrap">
           {displayPercent}%
         </span>
       )}

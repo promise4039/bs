@@ -1,4 +1,5 @@
-// 날짜별 거래 그룹 구분선 — "7일 오늘  +30원 -16,210원"
+// 날짜별 거래 그룹 구분선 — 뱅크샐러드 스타일 (IMG_1501 레이아웃)
+// "28일 토요일  +4,000원 -34,400원"
 
 import { formatNumber } from '../../utils/currency';
 
@@ -42,14 +43,14 @@ export function DateDivider({ date, income = 0, expense = 0 }: DateDividerProps)
   const label = formatDateWithRelative(date);
 
   return (
-    <div className="flex justify-between items-center py-3 px-1 mt-2 sticky top-0 z-10 bg-bg-app/90 backdrop-blur-sm">
+    <div className="sticky top-0 z-10 flex items-center justify-between px-2 py-2.5 mt-1 bg-bg-app/95 backdrop-blur-sm border-b border-border-primary/30">
       {/* 왼쪽: 날짜 라벨 */}
-      <span className="text-[15px] text-text-primary font-semibold">
+      <span className="text-[14px] text-text-primary font-semibold tracking-tight">
         {label}
       </span>
 
       {/* 오른쪽: 수입/지출 합계 */}
-      <div className="flex gap-3 text-[13px]">
+      <div className="flex items-center gap-2.5 text-[12px]">
         {income > 0 && (
           <span className="text-income font-medium">+{formatNumber(income)}원</span>
         )}

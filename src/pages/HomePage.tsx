@@ -1,4 +1,4 @@
-// 홈 대시보드 — 예산 소진율 + 최근 거래 미리보기
+// 홈 대시보드 — 뱅크샐러드 스타일 예산 소진율 + 최근 거래 미리보기
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -53,57 +53,62 @@ export default function HomePage() {
   const hasTransactions = recentTransactions.length > 0;
 
   return (
-    <div className="flex flex-col gap-4 pb-4 animate-fade-in">
+    <div className="flex flex-col gap-5 pb-6 animate-fade-in">
       {/* ========== 헤더: 홈 + 설정 ========== */}
-      <div className="flex items-center justify-between pt-1">
-        <h1 className="text-xl font-bold text-text-primary">홈</h1>
+      <div className="flex items-center justify-between pt-2 px-1">
+        <h1 className="text-[22px] font-bold text-text-primary tracking-tight">홈</h1>
         <button
           type="button"
           onClick={() => navigate('/settings')}
-          className="text-text-secondary hover:text-text-primary transition-colors text-xl bg-transparent border-none cursor-pointer"
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
           aria-label="설정"
         >
-          ⚙️
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-text-secondary">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
         </button>
       </div>
 
-      {/* ========== 월 네비게이터 + 지출/수입 총계 (같은 줄) ========== */}
-      <div className="flex items-center justify-between">
+      {/* ========== 월 네비게이터 + 지출/수입 총계 ========== */}
+      <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setMonth(prevMonth)}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-xl text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
           >
             ‹
           </button>
-          <span className="text-lg font-bold text-text-primary min-w-[3rem] text-center">
+          <span className="text-[17px] font-bold text-text-primary min-w-[3.5rem] text-center">
             {formatMonthLabel(currentMonth)}
           </span>
           <button
             type="button"
             disabled={!canGoNextMonth}
             onClick={() => canGoNextMonth && setMonth(nextMonth)}
-            className={`w-9 h-9 flex items-center justify-center rounded-full text-xl transition-colors ${
+            className={`w-8 h-8 flex items-center justify-center rounded-full text-lg transition-colors bg-transparent border-none ${
               canGoNextMonth
-                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer'
                 : 'text-text-tertiary opacity-30 cursor-not-allowed'
             }`}
           >
             ›
           </button>
         </div>
-        <div className="text-right">
-          <div className="flex items-baseline gap-1">
-            <span className="text-xs text-text-secondary">지출</span>
-            <span className="text-lg font-bold text-text-primary">
-              {formatNumber(totalExpense)}원
+        <div className="text-right flex flex-col gap-0.5">
+          <div className="flex items-baseline gap-1.5 justify-end">
+            <span className="text-[11px] text-text-tertiary">지출</span>
+            <span className="text-[18px] font-bold text-text-primary tabular-nums">
+              {formatNumber(totalExpense)}
+              <span className="text-[13px] font-medium text-text-secondary ml-0.5">원</span>
             </span>
           </div>
-          <div className="flex items-baseline gap-1 justify-end">
-            <span className="text-xs text-text-secondary">수입</span>
-            <span className="text-sm font-semibold text-income">
-              {formatNumber(totalIncome)}원
+          <div className="flex items-baseline gap-1.5 justify-end">
+            <span className="text-[11px] text-text-tertiary">수입</span>
+            <span className="text-[14px] font-semibold text-income tabular-nums">
+              +{formatNumber(totalIncome)}
+              <span className="text-[11px] font-medium ml-0.5">원</span>
             </span>
           </div>
         </div>
@@ -111,12 +116,12 @@ export default function HomePage() {
 
       {/* ========== 지난달 비교 배너 ========== */}
       {expenseDiff !== null && (
-        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-base">{expenseDiff > 0 ? '😊' : '😰'}</span>
-            <span className="text-[14px] text-text-primary">
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3.5 mx-0.5">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[18px]">{expenseDiff > 0 ? '😊' : '😰'}</span>
+            <span className="text-[13px] text-text-primary leading-snug">
               지난달 이때보다{' '}
-              <span className={expenseDiff > 0 ? 'text-income font-semibold' : 'text-expense font-semibold'}>
+              <span className={`font-bold ${expenseDiff > 0 ? 'text-income' : 'text-expense'}`}>
                 {formatNumber(Math.abs(expenseDiff))}원
               </span>
               {expenseDiff > 0 ? ' 덜' : ' 더'} 쓰는 중
@@ -125,7 +130,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => navigate('/stats')}
-            className="text-[13px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors"
+            className="text-[12px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
           >
             분석
           </button>
@@ -134,61 +139,76 @@ export default function HomePage() {
 
       {/* ========== 이번 달 예산 요약 ========== */}
       <Card>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-text-secondary mb-1">이번 달 예산</p>
-              <p className="text-xl font-bold text-text-primary">{formatNumber(totalExpense)}원 <span className="text-sm font-normal text-text-tertiary">/ {formatKRW(totalBudget)}</span></p>
+        <div className="flex flex-col gap-3.5">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="text-[12px] text-text-tertiary font-medium">이번 달 예산</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-[22px] font-bold text-text-primary tabular-nums">
+                  {formatNumber(totalExpense)}
+                  <span className="text-[13px] font-normal text-text-secondary">원</span>
+                </span>
+                <span className="text-[12px] text-text-tertiary">
+                  / {formatKRW(totalBudget)}
+                </span>
+              </div>
             </div>
             {totalRatio > 1 && <Badge text="초과" color="red" />}
           </div>
           <ProgressBar value={totalExpense} max={totalBudget} size="md" showLabel />
-          <button
-            type="button"
-            onClick={() => navigate('/settings')}
-            className="text-xs text-text-tertiary hover:text-text-secondary transition-colors self-end"
-          >
-            설정하기 ›
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => navigate('/settings')}
+              className="text-[12px] text-text-tertiary hover:text-text-secondary transition-colors font-medium bg-transparent border-none cursor-pointer"
+            >
+              설정하기 ›
+            </button>
+          </div>
         </div>
       </Card>
 
       {/* ========== 카테고리별 예산 소진율 ========== */}
       <div>
         <div className="flex justify-between items-center px-1 mb-3">
-          <h2 className="text-[15px] font-semibold text-text-primary">카테고리별 예산</h2>
+          <h2 className="text-[15px] font-bold text-text-primary">카테고리별 예산</h2>
           <button
-            className="text-[13px] text-text-tertiary hover:text-text-secondary transition-colors bg-transparent border-none cursor-pointer"
+            className="text-[12px] text-text-tertiary hover:text-text-secondary transition-colors bg-transparent border-none cursor-pointer font-medium"
             onClick={() => navigate('/stats')}
           >
             더보기 ›
           </button>
         </div>
-        <Card className="!p-0">
-          <div className="divide-y divide-border-primary/40">
+        <Card className="!p-0 overflow-hidden">
+          <div className="divide-y divide-border-primary/30">
             {budgetComparisons.map((item) => (
-              <div
+              <button
                 key={item.category}
-                className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-bg-card-hover transition-colors first:rounded-t-[16px] last:rounded-b-[16px]"
+                type="button"
+                className="w-full flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-bg-card-hover transition-colors first:rounded-t-[16px] last:rounded-b-[16px] bg-transparent border-none text-left"
                 onClick={() => navigate(`/category/${encodeURIComponent(item.category)}`)}
               >
                 <CategoryIcon category={item.category} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className="text-[14px] font-medium text-text-primary">
                         {item.category}
                       </span>
                       {item.ratio > 1 && <Badge text="초과" color="red" />}
                     </div>
-                    <span className="text-xs text-text-secondary whitespace-nowrap">
-                      {formatKRW(item.spent)}
-                      <span className="text-text-tertiary"> / {formatKRW(item.budget)}</span>
-                    </span>
+                    <div className="flex items-baseline gap-0.5 tabular-nums">
+                      <span className="text-[13px] font-semibold text-text-primary">
+                        {formatKRW(item.spent)}
+                      </span>
+                      <span className="text-[11px] text-text-tertiary">
+                        / {formatKRW(item.budget)}
+                      </span>
+                    </div>
                   </div>
                   <ProgressBar value={item.spent} max={item.budget} size="sm" />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </Card>
@@ -197,17 +217,17 @@ export default function HomePage() {
       {/* ========== 최근 거래 ========== */}
       <div>
         <div className="flex justify-between items-center px-1 mb-3">
-          <h2 className="text-[15px] font-semibold text-text-primary">최근 거래</h2>
+          <h2 className="text-[15px] font-bold text-text-primary">최근 거래</h2>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
-              className="text-[13px] text-accent cursor-pointer hover:text-accent-hover transition-colors bg-transparent border-none font-medium"
+              className="text-[12px] text-accent cursor-pointer hover:text-accent-hover transition-colors bg-transparent border-none font-bold"
             >
               + 추가
             </button>
             <button
-              className="text-[13px] text-text-tertiary cursor-pointer hover:text-text-secondary transition-colors bg-transparent border-none"
+              className="text-[12px] text-text-tertiary cursor-pointer hover:text-text-secondary transition-colors bg-transparent border-none font-medium"
               onClick={() => navigate('/transactions')}
             >
               더보기 ›
@@ -216,15 +236,17 @@ export default function HomePage() {
         </div>
 
         {hasTransactions ? (
-          <div className="px-1">
-            {recentTransactions.map((tx) => (
-              <TransactionListItem
-                key={tx.id}
-                transaction={tx}
-                onClick={() => setEditingTx(tx)}
-              />
-            ))}
-          </div>
+          <Card className="!p-0 overflow-hidden">
+            <div className="divide-y divide-border-primary/20">
+              {recentTransactions.map((tx) => (
+                <TransactionListItem
+                  key={tx.id}
+                  transaction={tx}
+                  onClick={() => setEditingTx(tx)}
+                />
+              ))}
+            </div>
+          </Card>
         ) : (
           <EmptyState
             icon="📊"

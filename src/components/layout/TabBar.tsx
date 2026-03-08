@@ -6,40 +6,51 @@ interface TabItem {
   path: string;
   label: string;
   icon: string;
-  iconActive: string;
 }
 
 const TABS: TabItem[] = [
-  { path: '/',              label: '홈',       icon: '🏠', iconActive: '🏠' },
-  { path: '/assets',        label: '자산',     icon: '🏦', iconActive: '🏦' },
-  { path: '/transactions',  label: '가계부',   icon: '📋', iconActive: '📋' },
-  { path: '/calendar',      label: '캘린더',   icon: '📅', iconActive: '📅' },
-  { path: '/stats',         label: '통계',     icon: '📊', iconActive: '📊' },
+  { path: '/',              label: '홈',       icon: '🏠' },
+  { path: '/assets',        label: '자산',     icon: '🏦' },
+  { path: '/transactions',  label: '가계부',   icon: '📋' },
+  { path: '/calendar',      label: '캘린더',   icon: '📅' },
+  { path: '/stats',         label: '통계',     icon: '📊' },
 ];
 
 export function TabBar() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 현재 경로가 탭의 하위 경로인지 체크 (예: /transactions/detail → 가계부 활성)
+  const isTabActive = (tabPath: string) => {
+    if (tabPath === '/') return location.pathname === '/';
+    return location.pathname.startsWith(tabPath);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 bg-bg-tabbar/95 backdrop-blur-xl border-t border-border-primary">
       <div className="mx-auto max-w-lg flex items-center justify-around h-16 px-2">
         {TABS.map((tab) => {
-          const isActive = location.pathname === tab.path;
+          const active = isTabActive(tab.path);
           return (
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`flex flex-col items-center justify-center gap-1 flex-1 py-1.5 transition-colors ${
-                isActive ? 'text-accent' : 'text-text-tertiary'
+              className={`flex flex-col items-center justify-center gap-1 flex-1 py-1.5 transition-colors duration-150 ${
+                active ? 'text-accent' : 'text-text-tertiary'
               }`}
             >
-              <span className="text-[22px] leading-none">
-                {isActive ? tab.iconActive : tab.icon}
+              <span
+                className="leading-none transition-transform duration-150"
+                style={{ fontSize: '22px' }}
+              >
+                {tab.icon}
               </span>
-              <span className={`text-[11px] font-medium ${
-                isActive ? 'text-accent' : 'text-text-tertiary'
-              }`}>
+              <span
+                className={`font-medium leading-none transition-colors duration-150 ${
+                  active ? 'text-accent' : 'text-text-tertiary'
+                }`}
+                style={{ fontSize: '11px' }}
+              >
                 {tab.label}
               </span>
             </button>

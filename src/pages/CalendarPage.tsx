@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card,
-  SectionHeader,
   TransactionListItem,
   EmptyState,
   Badge,
@@ -175,50 +174,59 @@ export default function CalendarPage() {
   const canGoNextMonth = !effectiveMax || nextMonth <= effectiveMax;
 
   return (
-    <div className="pb-28 space-y-3">
-      {/* ========== 헤더: 가계부 + 월 총계 ========== */}
-      <div className="pt-2">
-        <h1 className="text-xl font-bold text-text-primary">가계부</h1>
+    <div className="pb-28 flex flex-col gap-4 animate-fade-in">
+      {/* ========== 헤더: 가계부 타이틀 + 총계 ========== */}
+      <div className="flex items-center justify-between pt-2 px-1">
+        <h1 className="text-[22px] font-bold text-text-primary tracking-tight">가계부</h1>
+        <div className="flex items-baseline gap-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary mr-1">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          <span className="text-[15px] font-bold text-text-primary tabular-nums">
+            {formatNumber(totalExpense)}원
+          </span>
+        </div>
       </div>
 
-      {/* 월 네비게이터 + 지출/수입 총계 */}
-      <div className="flex items-center justify-between">
+      {/* ========== 월 네비게이터 + 수입/지출 총계 ========== */}
+      <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1">
           <button
             type="button"
             disabled={!canGoPrev}
             onClick={() => setMonth(prevMonth)}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-xl text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
           >
             ‹
           </button>
-          <span className="text-lg font-bold text-text-primary min-w-[3rem] text-center">
+          <span className="text-[17px] font-bold text-text-primary min-w-[3.5rem] text-center">
             {formatMonthLabel(currentMonth)}
           </span>
           <button
             type="button"
             disabled={!canGoNextMonth}
             onClick={() => canGoNextMonth && setMonth(nextMonth)}
-            className={`w-9 h-9 flex items-center justify-center rounded-full text-xl transition-colors ${
+            className={`w-8 h-8 flex items-center justify-center rounded-full text-lg transition-colors bg-transparent border-none ${
               canGoNextMonth
-                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                ? 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer'
                 : 'text-text-tertiary opacity-30 cursor-not-allowed'
             }`}
           >
             ›
           </button>
         </div>
-        <div className="text-right">
+        <div className="flex items-center gap-4">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs text-text-secondary">지출</span>
-            <span className="text-lg font-bold text-text-primary">
-              {formatNumber(totalExpense)}원
+            <span className="text-[11px] text-text-tertiary">수입</span>
+            <span className="text-[13px] font-semibold text-income tabular-nums">
+              +{formatNumber(totalIncome)}원
             </span>
           </div>
-          <div className="flex items-baseline gap-1 justify-end">
-            <span className="text-xs text-text-secondary">수입</span>
-            <span className="text-sm font-semibold text-income">
-              {formatNumber(totalIncome)}원
+          <div className="flex items-baseline gap-1">
+            <span className="text-[11px] text-text-tertiary">지출</span>
+            <span className="text-[13px] font-semibold text-text-primary tabular-nums">
+              -{formatNumber(totalExpense)}원
             </span>
           </div>
         </div>
@@ -226,12 +234,12 @@ export default function CalendarPage() {
 
       {/* ========== 지난달 비교 배너 ========== */}
       {expenseDiff && expenseDiff.prevTotal > 0 && (
-        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-base">{expenseDiff.diff > 0 ? '😊' : '😰'}</span>
-            <span className="text-[14px] text-text-primary">
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3.5 mx-0.5">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[18px]">{expenseDiff.diff > 0 ? '😊' : '😰'}</span>
+            <span className="text-[13px] text-text-primary leading-snug">
               지난달 이때보다{' '}
-              <span className={expenseDiff.diff > 0 ? 'text-income font-semibold' : 'text-expense font-semibold'}>
+              <span className={`font-bold ${expenseDiff.diff > 0 ? 'text-income' : 'text-expense'}`}>
                 {formatNumber(Math.abs(expenseDiff.diff))}원
               </span>
               {expenseDiff.diff > 0 ? ' 덜' : ' 더'} 쓰는 중
@@ -240,31 +248,31 @@ export default function CalendarPage() {
           <button
             type="button"
             onClick={() => navigate('/comparison')}
-            className="text-[13px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors"
+            className="text-[12px] text-text-tertiary bg-bg-elevated px-3 py-1.5 rounded-lg hover:bg-bg-card-hover transition-colors font-medium border-none cursor-pointer"
           >
             분석
           </button>
         </div>
       )}
 
-      {/* ========== 툴바: 목록/달력 + 필터 + 검색 + 추가 ========== */}
-      <div className="flex items-center justify-between gap-2">
+      {/* ========== 툴바: 목록/달력 토글 + 필터 + 검색 + 추가 ========== */}
+      <div className="flex items-center justify-between gap-2 px-0.5">
         <div className="flex items-center gap-2">
           {/* 목록/달력 토글 */}
-          <div className="flex items-center bg-bg-elevated rounded-full p-1">
+          <div className="flex items-center bg-bg-elevated rounded-full p-0.5">
             <button
               type="button"
               onClick={() => navigate('/transactions')}
-              className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors"
+              className="flex items-center gap-1 px-3.5 py-1.5 text-[13px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors bg-transparent border-none cursor-pointer"
             >
-              <span className="text-[14px]">☰</span>
+              <span className="text-[12px]">☰</span>
               <span>목록</span>
             </button>
             <button
               type="button"
-              className="flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm"
+              className="flex items-center gap-1 px-3.5 py-1.5 text-[13px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm border-none"
             >
-              <span className="text-[14px]">📅</span>
+              <span className="text-[12px]">📅</span>
               <span>달력</span>
             </button>
           </div>
@@ -274,26 +282,26 @@ export default function CalendarPage() {
             <button
               type="button"
               onClick={() => setShowFilter(!showFilter)}
-              className={`flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium rounded-full transition-colors ${
+              className={`flex items-center gap-1 px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-colors border-none cursor-pointer ${
                 filterType !== 'all'
                   ? 'bg-accent/15 text-accent'
                   : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
               }`}
             >
               <span>필터</span>
-              <span className="text-[11px]">▾</span>
+              <span className="text-[10px]">▾</span>
             </button>
             {showFilter && (
-              <div className="absolute top-full left-0 mt-1 z-30 bg-bg-elevated border border-border-primary rounded-xl shadow-lg overflow-hidden min-w-[100px]">
+              <div className="absolute top-full left-0 mt-1.5 z-30 bg-bg-elevated border border-border-primary rounded-xl shadow-lg overflow-hidden min-w-[100px]">
                 {(['all', '수입', '지출'] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => { setFilterType(type); setShowFilter(false); }}
-                    className={`w-full px-4 py-3 text-sm text-left transition-colors ${
+                    className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors border-none cursor-pointer ${
                       filterType === type
                         ? 'bg-accent/10 text-accent font-medium'
-                        : 'text-text-secondary hover:bg-bg-card-hover'
+                        : 'text-text-secondary hover:bg-bg-card-hover bg-transparent'
                     }`}
                   >
                     {type === 'all' ? '전체' : type}
@@ -304,16 +312,19 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {/* 검색 */}
           <button
             type="button"
             onClick={() => setShowSearch(!showSearch)}
-            className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
-              showSearch ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+            className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors border-none cursor-pointer ${
+              showSearch ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated bg-transparent'
             }`}
           >
-            <span className="text-lg">🔍</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
           </button>
 
           {/* 거래 추가 */}
@@ -327,17 +338,23 @@ export default function CalendarPage() {
               }
               setShowAddForm(true);
             }}
-            className="w-10 h-10 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
           >
-            <span className="text-2xl font-light">+</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
           </button>
         </div>
       </div>
 
       {/* 검색 바 (토글) */}
       {showSearch && (
-        <div className="flex items-center gap-2 bg-bg-card rounded-[14px] px-4 py-3">
-          <span className="text-text-tertiary text-sm flex-shrink-0">🔍</span>
+        <div className="flex items-center gap-2.5 bg-bg-card rounded-[14px] px-4 py-3 mx-0.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary flex-shrink-0">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
           <input
             type="text"
             value={searchQuery}
@@ -350,7 +367,7 @@ export default function CalendarPage() {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="bg-transparent border-none cursor-pointer text-text-tertiary hover:text-text-primary text-sm transition-colors"
+              className="w-5 h-5 flex items-center justify-center rounded-full bg-bg-elevated text-text-tertiary hover:text-text-primary text-[11px] transition-colors border-none cursor-pointer"
             >
               ✕
             </button>
@@ -358,29 +375,29 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* ========== 무지출 배너 ========== */}
+      {/* ========== 무지출 챌린지 배너 ========== */}
       {noSpendDayCount > 0 && (
-        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#ff6b9d]" />
-            <span className="text-[14px] text-text-primary">이번 달 무지출</span>
+        <div className="flex items-center justify-between bg-bg-card rounded-[14px] px-4 py-3.5 mx-0.5">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[18px]">🐷</span>
+            <span className="text-[13px] text-text-primary font-medium">이번 달 무지출 챌린지</span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-[14px] font-semibold text-text-primary">총 {noSpendDayCount}일</span>
-            <span className="text-text-tertiary text-xs">›</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[14px] font-bold text-accent">{noSpendDayCount}회</span>
+            <span className="text-[11px] text-text-tertiary">성공</span>
           </div>
         </div>
       )}
 
       {/* ========== 캘린더 그리드 ========== */}
-      <div className="px-1">
+      <Card className="!p-3">
         {/* 요일 헤더 */}
-        <div className="grid grid-cols-7 mb-2">
+        <div className="grid grid-cols-7 mb-1">
           {DAY_HEADERS.map((header, i) => (
             <div
               key={header}
-              className={`text-center text-xs font-medium py-1.5 ${
-                i === 0 ? 'text-expense' : i === 6 ? 'text-accent' : 'text-text-secondary'
+              className={`text-center text-[11px] font-semibold py-2 ${
+                i === 0 ? 'text-expense/70' : i === 6 ? 'text-accent/70' : 'text-text-tertiary'
               }`}
             >
               {header}
@@ -389,10 +406,10 @@ export default function CalendarPage() {
         </div>
 
         {/* 날짜 그리드 */}
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-7 gap-y-0.5">
           {calendarCells.map((day, index) => {
             if (day === null) {
-              return <div key={`empty-${index}`} className="min-h-[64px]" />;
+              return <div key={`empty-${index}`} className="min-h-[62px]" />;
             }
 
             const summary = dailySummary.get(day);
@@ -402,7 +419,7 @@ export default function CalendarPage() {
             const todayFlag = isToday(day);
             const selected = selectedDay === day;
             const dayOfWeek = (firstDayOfWeek + day - 1) % 7;
-            const hasBothTypes = expense > 0 && income > 0;
+            const noSpend = !future && expense === 0 && income === 0;
 
             return (
               <button
@@ -411,117 +428,121 @@ export default function CalendarPage() {
                 onClick={() => !future && handleDayClick(day)}
                 disabled={future}
                 className={`
-                  min-h-[64px] flex flex-col items-center pt-1.5 pb-1 gap-[1px]
-                  transition-all text-center border-t border-border-primary/30
-                  ${future ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'}
-                  ${selected ? 'bg-accent/10' : ''}
-                  ${todayFlag && !selected ? 'bg-bg-elevated/50' : ''}
+                  min-h-[62px] flex flex-col items-center pt-1.5 pb-1 gap-[2px] rounded-lg
+                  transition-all text-center border-none
+                  ${future ? 'opacity-20 cursor-not-allowed bg-transparent' : 'cursor-pointer bg-transparent'}
+                  ${selected ? 'bg-accent/10 ring-1 ring-accent/30' : ''}
+                  ${todayFlag && !selected ? 'bg-bg-elevated/60' : ''}
+                  ${!selected && !todayFlag && !future ? 'hover:bg-bg-elevated/40' : ''}
                 `}
               >
                 {/* 날짜 숫자 */}
                 <span
-                  className={`text-xs leading-none ${
-                    future
-                      ? 'text-text-tertiary'
-                      : todayFlag
-                        ? 'text-accent font-bold'
+                  className={`text-[12px] leading-none w-6 h-6 flex items-center justify-center rounded-full ${
+                    todayFlag
+                      ? 'bg-accent text-white font-bold'
+                      : future
+                        ? 'text-text-tertiary'
                         : dayOfWeek === 0
-                          ? 'text-expense/80'
+                          ? 'text-expense/80 font-medium'
                           : dayOfWeek === 6
-                            ? 'text-accent/80'
-                            : 'text-text-primary'
+                            ? 'text-accent/80 font-medium'
+                            : 'text-text-primary font-medium'
                   }`}
                 >
                   {day}
                 </span>
 
-                {/* 거래 도트 (수입+지출 동시) */}
-                {hasBothTypes && !future && (
-                  <div className="flex gap-0.5">
-                    <span className="w-1 h-1 rounded-full bg-expense" />
-                    <span className="w-1 h-1 rounded-full bg-income" />
-                  </div>
-                )}
-
                 {/* 지출 금액 */}
                 {!future && expense > 0 && (
-                  <span className="text-[10px] leading-tight text-text-primary font-medium truncate w-full px-0.5">
+                  <span className="text-[9px] leading-tight text-text-primary/80 font-medium truncate w-full px-0.5 tabular-nums">
                     -{formatCellAmount(expense)}
                   </span>
                 )}
 
                 {/* 수입 금액 */}
                 {!future && income > 0 && (
-                  <span className="text-[10px] leading-tight text-income font-medium truncate w-full px-0.5">
+                  <span className="text-[9px] leading-tight text-income/80 font-medium truncate w-full px-0.5 tabular-nums">
                     +{formatCellAmount(income)}
                   </span>
                 )}
 
-                {/* 무지출 표시 (지출도 수입도 없는 과거 날짜) */}
-                {!future && expense === 0 && income === 0 && !isFutureDay(day) && (
-                  <span className="text-[9px] leading-none text-text-tertiary mt-1">·</span>
+                {/* 무지출 표시 (돼지 아이콘) */}
+                {noSpend && (
+                  <span className="text-[11px] leading-none mt-0.5 opacity-40">🐷</span>
                 )}
               </button>
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {/* ========== 선택된 날짜의 거래 상세 ========== */}
       {selectedDay !== null && (
-        <Card className="space-y-2">
-          <SectionHeader
-            title={`${month}월 ${selectedDay}일`}
-            rightLabel="+ 추가"
-            onRightClick={() => {
-              const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-              setAddFormDate(dateStr);
-              setShowAddForm(true);
-            }}
-          />
-
-          {/* 해당 날짜 수입/지출 소계 */}
-          {(() => {
-            const s = dailySummary.get(selectedDay);
-            if (!s) return null;
-            return (
-              <div className="flex items-center gap-3 text-xs pb-1">
-                {s.expense > 0 && (
-                  <span className="text-text-secondary">
-                    지출 <span className="font-semibold text-text-primary">{formatKRW(s.expense)}</span>
-                  </span>
-                )}
-                {s.income > 0 && (
-                  <span className="text-text-secondary">
-                    수입 <span className="font-semibold text-income">{formatKRW(s.income)}</span>
-                  </span>
-                )}
-              </div>
-            );
-          })()}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center px-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-[15px] font-bold text-text-primary">
+                {month}월 {selectedDay}일
+              </h3>
+              {(() => {
+                const s = dailySummary.get(selectedDay);
+                if (!s) return null;
+                return (
+                  <div className="flex items-center gap-2">
+                    {s.expense > 0 && (
+                      <span className="text-[11px] text-text-tertiary">
+                        지출 <span className="font-semibold text-text-secondary tabular-nums">{formatKRW(s.expense)}</span>
+                      </span>
+                    )}
+                    {s.income > 0 && (
+                      <span className="text-[11px] text-text-tertiary">
+                        수입 <span className="font-semibold text-income tabular-nums">{formatKRW(s.income)}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+                setAddFormDate(dateStr);
+                setShowAddForm(true);
+              }}
+              className="text-[12px] text-accent font-bold bg-transparent border-none cursor-pointer hover:text-accent-hover transition-colors"
+            >
+              + 추가
+            </button>
+          </div>
 
           {selectedDayTransactions.length > 0 ? (
-            <div className="overflow-hidden rounded-xl">
-              {selectedDayTransactions.map((tx) => (
-                <TransactionListItem
-                  key={tx.id}
-                  transaction={tx}
-                  onClick={() => setEditingTx(tx)}
-                  onDelete={deleteTransaction}
-                />
-              ))}
-            </div>
+            <Card className="!p-0 overflow-hidden">
+              <div className="divide-y divide-border-primary/20">
+                {selectedDayTransactions.map((tx) => (
+                  <TransactionListItem
+                    key={tx.id}
+                    transaction={tx}
+                    onClick={() => setEditingTx(tx)}
+                    onDelete={deleteTransaction}
+                  />
+                ))}
+              </div>
+            </Card>
           ) : (
-            <EmptyState
-              icon="✨"
-              title="무지출 달성!"
-              description="이 날은 지출이 없습니다"
-            />
+            <Card>
+              <EmptyState
+                icon="✨"
+                title="무지출 달성!"
+                description="이 날은 지출이 없습니다"
+              />
+            </Card>
           )}
-        </Card>
+        </div>
       )}
 
-      {/* ========== 필터 결과 표시 ========== */}
+      {/* ========== 필터/검색 결과 뱃지 표시 ========== */}
       {(searchQuery || filterType !== 'all') && (
         <div className="flex items-center gap-2 px-1">
           {searchQuery && (

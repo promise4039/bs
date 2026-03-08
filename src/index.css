@@ -103,6 +103,12 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* 매끄러운 스크롤 */
+main {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 /* 페이지 전환 애니메이션 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -144,4 +150,31 @@ input[type="number"] {
 
 .animate-shake {
   animation: shake 0.4s ease-out;
+}
+
+/* 펄스 애니메이션 (로딩용) */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 스켈레톤 로딩 시머 */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-card) 25%,
+    var(--color-bg-elevated) 50%,
+    var(--color-bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }

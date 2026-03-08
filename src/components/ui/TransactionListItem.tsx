@@ -1,4 +1,5 @@
-// 거래 내역 리스트 아이템 — 뱅크샐러드 스타일 (스와이프 삭제 지원)
+// 거래 내역 리스트 아이템 — 뱅크샐러드 스타일 (IMG_1501 레이아웃, 스와이프 삭제 지원)
+// 왼쪽: 카테고리 아이콘 (둥근 배경) / 중앙: 거래명 + 소분류|결제수단 / 오른쪽: 금액
 
 import { useState, useRef, useCallback } from 'react';
 import type { Transaction } from '../../types';
@@ -62,6 +63,9 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
   const sign = type === '지출' ? '-' : '+';
   const amountText = `${sign}${formatKRW(amount)}`;
 
+  // 서브정보: 소분류 | 결제수단
+  const subInfo = [subcategory, paymentMethod].filter(Boolean).join(' | ');
+
   return (
     <div className="relative overflow-hidden">
       {/* 삭제 버튼 (뒤에 숨어있음) */}
@@ -69,7 +73,7 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
         <button
           type="button"
           onClick={() => onDelete(transaction.id)}
-          className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-expense text-white font-medium text-sm"
+          className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-expense text-white font-medium text-[13px]"
           style={{ width: DELETE_THRESHOLD }}
         >
           삭제
@@ -85,22 +89,26 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
         onTouchEnd={onDelete ? handleTouchEnd : undefined}
         onClick={handleClick}
       >
-        <div className={`flex items-center gap-3 py-3.5 px-1 border-b border-border-primary/40 last:border-b-0${
-          onClick ? ' cursor-pointer' : ''
-        }`}>
+        <div
+          className={`flex items-center gap-3 py-3 px-2 border-b border-border-primary/30${
+            onClick ? ' cursor-pointer active:bg-bg-elevated/50' : ''
+          }`}
+        >
           {/* 왼쪽: 카테고리 아이콘 */}
           <CategoryIcon category={category} size="md" />
 
-          {/* 중앙: 내용 + 서브정보 */}
+          {/* 중앙: 거래명 + 서브정보 */}
           <div className="flex flex-col flex-1 min-w-0 gap-0.5">
-            <span className="text-text-primary text-[15px] font-medium truncate">
+            <span className="text-[14px] text-text-primary font-medium truncate leading-tight">
               {content}
             </span>
-            <span className="text-[12px] text-text-tertiary truncate">
-              {subcategory} | {paymentMethod}
-            </span>
+            {subInfo && (
+              <span className="text-[11px] text-text-tertiary truncate leading-tight">
+                {subInfo}
+              </span>
+            )}
             {memo && (
-              <span className="text-[11px] text-text-tertiary truncate">
+              <span className="text-[11px] text-text-tertiary/70 truncate leading-tight">
                 {memo}
               </span>
             )}
@@ -108,7 +116,7 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
 
           {/* 오른쪽: 금액 */}
           <span
-            className={`font-semibold text-[15px] whitespace-nowrap ${
+            className={`font-semibold text-[14px] whitespace-nowrap tabular-nums ${
               type === '수입' ? 'text-income' : 'text-text-primary'
             }`}
           >
