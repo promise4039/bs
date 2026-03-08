@@ -90,7 +90,7 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
         onClick={handleClick}
       >
         <div
-          className={`flex items-center gap-3 py-3.5 px-3${
+          className={`flex items-center gap-3 py-3.5 px-4${
             onClick ? ' cursor-pointer active:bg-bg-elevated/50' : ''
           }`}
         >
@@ -99,16 +99,16 @@ export function TransactionListItem({ transaction, onClick, onDelete }: Transact
 
           {/* 중앙: 거래명 + 서브정보 */}
           <div className="flex flex-col flex-1 min-w-0 gap-1">
-            <span className="text-[14px] text-text-primary font-medium truncate">
+            <span className="text-[14px] text-text-primary font-medium truncate leading-snug">
               {content}
             </span>
             {subInfo && (
-              <span className="text-[11px] text-text-tertiary truncate">
+              <span className="text-[12px] text-text-tertiary truncate leading-tight">
                 {subInfo}
               </span>
             )}
             {memo && (
-              <span className="text-[11px] text-text-tertiary/60 truncate">
+              <span className="text-[11px] text-text-tertiary/60 truncate leading-tight">
                 💬 {memo}
               </span>
             )}

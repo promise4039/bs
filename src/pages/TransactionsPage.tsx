@@ -21,8 +21,7 @@ export default function TransactionsPage() {
   const { totalIncome, totalExpense } = useMonthlySummary(currentMonth);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
-  // 검색 상태
-  const [showSearch, setShowSearch] = useState(false);
+  // 검색 상태 (항상 표시)
   const [searchQuery, setSearchQuery] = useState('');
 
   // 결제수단 필터
@@ -106,38 +105,25 @@ export default function TransactionsPage() {
 
   return (
     <div className="flex flex-col pb-24 animate-fade-in">
-      {/* ========== 헤더: 가계부 + 아이콘들 (뱅크샐러드 상단) ========== */}
+      {/* ========== 헤더: 가계부 + 설정아이콘 + 총 지출 (뱅크샐러드 스타일) ========== */}
       <div className="flex items-center justify-between pt-2 pb-1 px-1">
         <h1 className="text-[22px] font-bold text-text-primary tracking-tight">가계부</h1>
-        <div className="flex items-center gap-0.5">
-          <button
-            type="button"
-            onClick={() => navigate('/sinking-fund')}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
-            title="싱킹펀드"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/categories')}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
-            title="카테고리 관리"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => navigate('/settings')}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors bg-transparent border-none cursor-pointer"
             title="설정"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
+          <span className="text-[15px] font-bold text-text-primary tabular-nums">
+            {formatNumber(totalExpense)}<span className="text-[12px] text-text-secondary font-medium">원</span>
+          </span>
         </div>
       </div>
 
-      {/* ========== 월 네비게이터 + 총 지출액 ========== */}
+      {/* ========== 월 네비게이터 ========== */}
       <div className="flex items-center justify-between px-1 py-1">
         {/* 좌측: < 3월 > */}
         <div className="flex items-center gap-1">
@@ -164,11 +150,6 @@ export default function TransactionsPage() {
             ›
           </button>
         </div>
-
-        {/* 우측: 총 지출액 */}
-        <span className="text-[22px] font-bold text-text-primary tabular-nums tracking-tight">
-          {formatNumber(totalExpense)}<span className="text-[15px] text-text-secondary font-semibold">원</span>
-        </span>
       </div>
 
       {/* ========== 수입/지출 요약 ========== */}
@@ -206,167 +187,147 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* ========== 목록/달력 탭 + 필터 (IMG_1501: 세그먼트 컨트롤) ========== */}
-      <div className="flex items-center justify-between gap-2 px-1 pb-2">
-        <div className="flex items-center gap-1.5">
-          {/* 목록/달력 토글 */}
-          <div className="flex items-center bg-bg-elevated rounded-full p-0.5">
-            <button
-              type="button"
-              className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm"
-            >
-              <span className="text-[12px]">☰</span>
-              <span>목록</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/calendar')}
-              className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors"
-            >
-              <span className="text-[12px]">📅</span>
-              <span>달력</span>
-            </button>
-          </div>
+      {/* ========== 목록/달력 탭 (뱅크샐러드 세그먼트 컨트롤) ========== */}
+      <div className="flex items-center justify-between gap-2 px-1 pb-1">
+        {/* 좌측: 목록/달력 토글 */}
+        <div className="flex items-center bg-bg-elevated rounded-full p-0.5">
+          <button
+            type="button"
+            className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full bg-bg-card text-text-primary shadow-sm border-none"
+          >
+            <span className="text-[12px]">☰</span>
+            <span>목록</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/calendar')}
+            className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full text-text-tertiary hover:text-text-secondary transition-colors bg-transparent border-none cursor-pointer"
+          >
+            <span className="text-[12px]">📅</span>
+            <span>달력</span>
+          </button>
+        </div>
 
-          {/* 필터 드롭다운 */}
+        {/* 우측: 전체 수입지출 드롭다운 */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowPaymentFilter(!showPaymentFilter)}
+            className="flex items-center gap-1 text-[13px] text-text-secondary hover:text-text-primary transition-colors bg-transparent border-none cursor-pointer"
+          >
+            <span>{typeFilter === 'all' ? '전체' : typeFilter}</span>
+            <span className="text-[11px]">수입지출</span>
+            <span className="text-[10px] ml-0.5">▾</span>
+          </button>
+          {showPaymentFilter && (
+            <div className="absolute top-full right-0 mt-1 z-30 bg-bg-elevated border border-border-primary rounded-xl shadow-lg overflow-hidden min-w-[140px]">
+              {/* 타입 필터 */}
+              <div className="px-3 py-1.5 text-[11px] text-text-tertiary font-medium border-b border-border-primary">분류</div>
+              {(['all', '수입', '지출'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => { setTypeFilter(t); setShowPaymentFilter(false); }}
+                  className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors border-none cursor-pointer ${
+                    typeFilter === t ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover bg-transparent'
+                  }`}
+                >
+                  {t === 'all' ? '전체' : t}
+                </button>
+              ))}
+              {/* 결제수단 필터 */}
+              {paymentMethods.length > 0 && (
+                <>
+                  <div className="px-3 py-1.5 text-[11px] text-text-tertiary font-medium border-t border-border-primary">결제수단</div>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedPaymentMethod(null); setShowPaymentFilter(false); }}
+                    className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors border-none cursor-pointer ${
+                      !selectedPaymentMethod ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover bg-transparent'
+                    }`}
+                  >
+                    전체
+                  </button>
+                  {paymentMethods.map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => { setSelectedPaymentMethod(method); setShowPaymentFilter(false); }}
+                      className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors truncate border-none cursor-pointer ${
+                        selectedPaymentMethod === method ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover bg-transparent'
+                      }`}
+                    >
+                      {method}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ========== 검색바 (항상 표시 — 뱅크샐러드 스타일) ========== */}
+      <div className="flex items-center gap-2 bg-bg-card rounded-[12px] px-3.5 py-2.5 mx-1 mb-2">
+        <span className="text-text-tertiary text-[13px] flex-shrink-0">🔍</span>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="거래처 및 메모 내용을 입력하세요"
+          className="flex-1 bg-transparent border-none outline-none text-[13px] text-text-primary placeholder:text-text-tertiary"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="bg-transparent border-none cursor-pointer text-text-tertiary hover:text-text-primary text-[12px] transition-colors"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* ========== 필터 칩 (내역/메모/태그 + 결제수단) ========== */}
+      <div className="flex items-center gap-1.5 px-2 pb-2">
+        <button
+          type="button"
+          className="px-2.5 py-1 text-[11px] font-medium rounded-full bg-bg-elevated text-text-secondary border-none cursor-pointer"
+        >
+          내역/메모/태그
+        </button>
+        {paymentMethods.length > 0 && (
           <div className="relative">
             <button
               type="button"
               onClick={() => setShowPaymentFilter(!showPaymentFilter)}
-              className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full transition-colors ${
-                typeFilter !== 'all' || isFilterActive
-                  ? 'bg-accent/15 text-accent'
-                  : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-full border-none cursor-pointer transition-colors ${
+                isFilterActive ? 'bg-accent/15 text-accent' : 'bg-bg-elevated text-text-secondary'
               }`}
             >
-              <span>필터</span>
-              <span className="text-[10px]">▾</span>
+              결제수단 {isFilterActive && '✓'}
             </button>
-            {showPaymentFilter && (
-              <div className="absolute top-full left-0 mt-1 z-30 bg-bg-elevated border border-border-primary rounded-xl shadow-lg overflow-hidden min-w-[140px]">
-                {/* 타입 필터 */}
-                <div className="px-3 py-1.5 text-[11px] text-text-tertiary font-medium border-b border-border-primary">분류</div>
-                {(['all', '수입', '지출'] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTypeFilter(t)}
-                    className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors ${
-                      typeFilter === t ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover'
-                    }`}
-                  >
-                    {t === 'all' ? '전체' : t}
-                  </button>
-                ))}
-                {/* 결제수단 필터 */}
-                {paymentMethods.length > 0 && (
-                  <>
-                    <div className="px-3 py-1.5 text-[11px] text-text-tertiary font-medium border-t border-border-primary">결제수단</div>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedPaymentMethod(null); setShowPaymentFilter(false); }}
-                      className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors ${
-                        !selectedPaymentMethod ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover'
-                      }`}
-                    >
-                      전체
-                    </button>
-                    {paymentMethods.map((method) => (
-                      <button
-                        key={method}
-                        type="button"
-                        onClick={() => { setSelectedPaymentMethod(method); setShowPaymentFilter(false); }}
-                        className={`w-full px-4 py-2.5 text-[13px] text-left transition-colors truncate ${
-                          selectedPaymentMethod === method ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary hover:bg-bg-card-hover'
-                        }`}
-                      >
-                        {method}
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
           </div>
-        </div>
-
-        {/* 우측 필터 타입 표시 + 검색 아이콘 */}
-        <div className="flex items-center gap-1">
-          {/* 전체/수입지출 간이 드롭다운 (IMG_1501 우측 "전체 수입지출") */}
-          <div className="flex items-center gap-1">
-            {typeFilter !== 'all' && (
-              <span className="text-[11px] text-accent bg-accent/10 px-2 py-0.5 rounded-full font-medium">
-                {typeFilter}
-              </span>
-            )}
-          </div>
-          {/* 검색 아이콘 */}
-          <button
-            type="button"
-            onClick={() => setShowSearch(!showSearch)}
-            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-              showSearch ? 'bg-accent/15 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
-            }`}
-          >
-            <span className="text-[15px]">🔍</span>
-          </button>
-          {/* 추가 아이콘 */}
-          <button
-            type="button"
-            onClick={() => setShowAddForm(true)}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
-          >
-            <span className="text-xl font-light leading-none">+</span>
-          </button>
-        </div>
+        )}
+        {/* 활성 필터 표시 */}
+        {typeFilter !== 'all' && (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-accent/10 text-accent">
+            {typeFilter}
+            <button type="button" onClick={() => setTypeFilter('all')} className="hover:text-text-primary ml-0.5 bg-transparent border-none cursor-pointer text-accent">✕</button>
+          </span>
+        )}
+        {isFilterActive && (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-accent/10 text-accent">
+            💳 {selectedPaymentMethod}
+            <button type="button" onClick={() => setSelectedPaymentMethod(null)} className="hover:text-text-primary ml-0.5 bg-transparent border-none cursor-pointer text-accent">✕</button>
+          </span>
+        )}
+        {searchQuery && (
+          <span className="text-[11px] text-text-secondary ml-auto">
+            검색결과 <span className="font-semibold text-accent">{filteredTransactions.length}</span>건
+          </span>
+        )}
       </div>
-
-      {/* ========== 검색바 (IMG_1501: 둥근 인풋) ========== */}
-      {showSearch && (
-        <div className="flex items-center gap-2 bg-bg-card rounded-[12px] px-3.5 py-2.5 mx-1 mb-2">
-          <span className="text-text-tertiary text-[13px] flex-shrink-0">🔍</span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="거래처 및 메모 내용을 입력하세요"
-            className="flex-1 bg-transparent border-none outline-none text-[13px] text-text-primary placeholder:text-text-tertiary"
-            autoFocus
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="bg-transparent border-none cursor-pointer text-text-tertiary hover:text-text-primary text-[12px] transition-colors"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* 활성 필터 뱃지 */}
-      {(searchQuery || isFilterActive || typeFilter !== 'all') && (
-        <div className="flex items-center gap-1.5 flex-wrap px-2 pb-2">
-          {typeFilter !== 'all' && (
-            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-accent/10 text-accent">
-              {typeFilter}
-              <button type="button" onClick={() => setTypeFilter('all')} className="hover:text-text-primary ml-0.5">✕</button>
-            </span>
-          )}
-          {isFilterActive && (
-            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-accent/10 text-accent">
-              💳 {selectedPaymentMethod}
-              <button type="button" onClick={() => setSelectedPaymentMethod(null)} className="hover:text-text-primary ml-0.5">✕</button>
-            </span>
-          )}
-          {searchQuery && (
-            <span className="text-[11px] text-text-secondary">
-              검색결과 <span className="font-semibold text-accent">{filteredTransactions.length}</span>건
-            </span>
-          )}
-        </div>
-      )}
 
       {/* ========== 날짜별 거래 리스트 ========== */}
       {hasTransactions ? (

@@ -193,7 +193,7 @@ export function TransactionFormSheet({
                 <span className="text-[28px] font-bold text-text-secondary">원</span>
               </div>
               {amount <= 0 && (
-                <p className="text-[12px] text-expense mt-3">금액을 입력해주세요</p>
+                <p className="text-[12px] text-accent mt-3">금액을 입력해주세요</p>
               )}
             </div>
 
