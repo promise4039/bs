@@ -1,5 +1,7 @@
 // 뱅크샐러드 스타일 바텀 시트 (거의 풀스크린, IMG_1501 참고)
+// Portal로 body에 직접 렌더링하여 z-index 문제 해결
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface BottomSheetProps {
   isOpen: boolean;
@@ -10,17 +12,22 @@ export interface BottomSheetProps {
 }
 
 export function BottomSheet({ isOpen, onClose, title, children, footer }: BottomSheetProps) {
-  // 배경 스크롤 방지
+  // 배경 스크롤 방지 — body + 메인 스크롤 컨테이너 모두 잠금
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
+      const mainEl = document.getElementById('app-main-scroll');
+      if (mainEl) mainEl.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+        if (mainEl) mainEl.style.overflow = '';
+      };
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* 오버레이 */}
       <div className="fixed inset-0 bg-black/60 z-40 animate-fade-overlay" onClick={onClose} />
@@ -60,6 +67,7 @@ export function BottomSheet({ isOpen, onClose, title, children, footer }: Bottom
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

@@ -13,7 +13,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="pt-[env(safe-area-inset-top,0px)]" />
 
       {/* 메인 콘텐츠 영역 — 하단 탭바 + safe area 높이만큼 padding */}
-      <main className="flex-1 overflow-y-auto pb-28">
+      <main id="app-main-scroll" className="flex-1 overflow-y-auto pb-28">
         <div className="mx-auto max-w-lg px-4 pt-2">
           {children}
         </div>
